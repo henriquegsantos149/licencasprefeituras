@@ -1,16 +1,46 @@
-# React + Vite
+# Rota do Licenciamento Digital
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é o repositório do front-end da plataforma **Rota do Licenciamento Digital**, desenvolvida para simplificar a gestão de licenciamento ambiental em prefeituras.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+-   **React** (v19)
+-   **Vite** (v7)
+-   **Tailwind CSS** (v4)
+-   **React Router** (v7)
 
-## React Compiler
+## 🛠️ Como rodar o projeto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Siga os passos abaixo para configurar o ambiente de desenvolvimento na sua máquina:
 
-## Expanding the ESLint configuration
+### 1. Clonar o repositório
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+git clone https://github.com/henriquegsantos149/licencasprefeituras.git
+cd licencasprefeituras
+```
+
+### 2. Instalar dependências
+
+Certifique-se de ter o [Node.js](https://nodejs.org/) instalado.
+
+```bash
+npm install
+```
+
+### 3. Configurar variáveis de ambiente
+
+Copie o arquivo de exemplo `.env.example` para criar o seu arquivo `.env`:
+
+```bash
+cp .env.example .env
+```
+*(Caso esteja no Windows sem bash, apenas duplique o arquivo `.env.example` e renomeie para `.env` manualmente)*
+
+### 4. Iniciar o servidor de desenvolvimento
+
+```bash
+npm run dev
+```
+
+O projeto estará rodando em `http://localhost:5173`.
