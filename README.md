@@ -27,29 +27,55 @@ Este é o repositório do front-end da plataforma **Rota do Licenciamento Digita
    - Visão geral dos processos de licenciamento
    - Cards de KPIs (Processos Ativos, Pendências)
    - Lista de processos com status e filtros
+   - Navegação rápida para detalhes do processo
+   - Botão de acesso rápido para novo processo
 
 2. **Novo Processo**
    - Wizard de 3 etapas para criação de requerimentos
-   - Triagem inicial com seleção de atividade
-   - Formulários técnicos dinâmicos
-   - Upload de documentação obrigatória
+   - **Etapa 1**: Triagem inicial
+     - Cadastro do requerente/razão social
+     - Seleção da atividade do empreendimento
+     - Visualização da documentação necessária
+   - **Etapa 2**: Detalhes técnicos
+     - Formulários dinâmicos baseados na atividade selecionada
+     - Questões específicas por tipo de licenciamento
+   - **Etapa 3**: Upload de documentação
+     - Lista de documentos obrigatórios
+     - Controle de progresso de upload
+     - Validação antes de protocolar
 
 3. **Detalhes do Processo**
    - Visualização completa do processo
    - Sistema de abas (Visão Geral, Documentação, Histórico)
-   - SLA e prazos com semáforo de status
-   - Ações do gestor (Análise, Pendência, Vistoria, Emissão)
+   - **SLA e Prazos**:
+     - Semáforo de status (Verde/Amarelo/Vermelho)
+     - Prazo do requerente (quando em pendência)
+     - Prazo do órgão (quando em análise)
+     - Cálculo automático de dias restantes
+   - **Ações do Gestor**:
+     - Iniciar Análise
+     - Solicitar Ajuste (pausa o prazo do órgão)
+     - Agendar Vistoria
+     - Emitir Licença
+   - Histórico completo de alterações
+   - Visualização de documentos enviados
 
 4. **Gestão Municipal (Admin)**
    - Visão consolidada de todos os processos
-   - KPIs por status (Vencidos, Prazo Curto, Em Dia)
+   - **KPIs por Status**:
+     - Atenção (Vencidos) - Vermelho
+     - Prazo Curto - Amarelo (≤ 5 dias)
+     - Em Dia - Verde
+     - Total de processos
    - Tabela responsiva (desktop) / Cards (mobile)
    - Filtros e busca
+   - Acesso rápido aos detalhes de cada processo
 
 5. **Configurações**
    - Perfil do usuário
    - Preferências de notificações
    - Configurações de conta
+   - Modo escuro (em desenvolvimento)
 
 ## 🛠️ Como rodar o projeto
 
@@ -149,10 +175,19 @@ O projeto utiliza **Tailwind CSS v4** com um design system customizado:
 - **Large Desktop**: `≥ 1024px` (lg:)
 
 ### Componentes Reutilizáveis
-- `.btn-primary` - Botão primário com hover e shadow
-- `.btn-secondary` - Botão secundário com borda
-- `.card` - Card com shadow e hover
-- `.input` - Input com focus states
+
+#### Classes CSS Customizadas
+- `.btn-primary` - Botão primário com hover, shadow e animação
+- `.btn-secondary` - Botão secundário com borda e hover
+- `.card` - Card com shadow, hover e animação sutil
+- `.input` - Input com focus states e validação visual
+
+#### Componentes React
+- **Badge** - Exibe status do processo com cores contextuais
+- **TrafficLight** - Semáforo visual para prazos (verde/amarelo/vermelho)
+- **Header** - Cabeçalho com busca e notificações
+- **Sidebar** - Menu lateral responsivo (drawer em mobile)
+- **Layout** - Container principal com estrutura responsiva
 
 ## 📱 Responsividade
 
@@ -183,19 +218,76 @@ O projeto foi desenvolvido com **mobile-first** e é totalmente responsivo:
 
 ## 🔄 Gerenciamento de Estado
 
-O projeto utiliza **React Context API** para gerenciar:
-- Lista de processos
+O projeto utiliza **React Context API** (`WorkflowContext`) para gerenciar:
+
+### Estado Global
+- Lista de processos de licenciamento
 - Adição de novos processos
-- Atualização de status
-- Cálculo de semáforo de prazos (SLA)
-- Histórico de alterações
+- Atualização de status e histórico
+- Cálculo automático de semáforo de prazos (SLA)
+- Gerenciamento de prazos (requerente vs. órgão)
+
+### Tipos de Atividades Suportadas
+- **Laticínio** (Indústria de Transformação - Médio/Alto Risco)
+- **Posto de Combustível** (Comércio Varejista - Alto Risco)
+- **Pequeno Porte** (Padaria/Lava-Jato - Baixo Risco)
+
+### Status de Processos
+- `Aberto` - Processo recém-protocolado
+- `Em Análise` - Em análise técnica pelo órgão
+- `Pendência` - Aguardando ajustes do requerente (prazo pausado)
+- `Vistoria Agendada` - Vistoria técnica agendada
+- `Emitido` - Licença emitida
+- `Indeferido` - Processo indeferido
+
+### Sistema de SLA (Semáforo)
+- **🟢 Verde**: Prazo em dia (> 5 dias restantes)
+- **🟡 Amarelo**: Prazo curto (≤ 5 dias restantes)
+- **🔴 Vermelho**: Prazo vencido
+- **⚪ Cinza**: Processo finalizado (Emitido/Indeferido)
+
+### Lógica de Prazos
+- Quando o processo está em **Pendência**, o prazo do órgão é pausado
+- O prazo do requerente começa a contar (15 dias)
+- Quando o requerente responde, o prazo do órgão é retomado
+- Cada atividade tem prazos específicos definidos
 
 ## 📝 Scripts Disponíveis
 
-- `npm run dev` - Inicia servidor de desenvolvimento
-- `npm run build` - Gera build de produção
-- `npm run preview` - Preview da build de produção
-- `npm run lint` - Executa ESLint
+- `npm run dev` - Inicia servidor de desenvolvimento com hot-reload
+- `npm run build` - Gera build otimizado para produção na pasta `dist/`
+- `npm run preview` - Preview local da build de produção
+- `npm run lint` - Executa ESLint para verificar qualidade do código
+
+## 🗂️ Rotas da Aplicação
+
+- `/` - Dashboard (página inicial)
+- `/new` - Novo Processo (wizard de criação)
+- `/process/:id` - Detalhes do Processo
+- `/admin` - Gestão Municipal (visão administrativa)
+- `/settings` - Configurações do usuário
+
+## 🎯 Fluxo de Trabalho
+
+1. **Criação do Processo**
+   - Empreendedor acessa "Novo Processo"
+   - Preenche dados do requerente e seleciona atividade
+   - Responde questões técnicas específicas
+   - Faz upload dos documentos obrigatórios
+   - Protocola o pedido
+
+2. **Análise pelo Órgão**
+   - Gestor visualiza o processo no Dashboard ou Admin
+   - Inicia análise técnica
+   - Se necessário, solicita ajustes (cria pendência)
+   - Agenda vistoria quando aplicável
+   - Emite licença ou indefere
+
+3. **Acompanhamento**
+   - Empreendedor acompanha status no Dashboard
+   - Visualiza prazos e pendências
+   - Recebe notificações sobre mudanças de status
+   - Acessa documentos e histórico completo
 
 ## 🚧 Próximas Melhorias
 
@@ -209,6 +301,24 @@ O projeto utiliza **React Context API** para gerenciar:
 - [ ] Upload real de documentos.
 - [ ] Notificações em tempo real.
 
+## 🔧 Requisitos do Sistema
+
+- **Node.js**: Versão 18 ou superior
+- **npm**: Versão 9 ou superior (ou yarn/pnpm compatível)
+- **Navegadores suportados**:
+  - Chrome/Edge (últimas 2 versões)
+  - Firefox (últimas 2 versões)
+  - Safari (últimas 2 versões)
+  - Navegadores mobile (iOS Safari, Chrome Mobile)
+
 ## 📄 Licença
 
 Este projeto é privado e de uso interno.
+
+## 👥 Contribuindo
+
+Este é um projeto interno. Para contribuições, entre em contato com a equipe de desenvolvimento.
+
+## 📞 Suporte
+
+Para dúvidas ou problemas, consulte a documentação técnica ou entre em contato com a equipe responsável.
