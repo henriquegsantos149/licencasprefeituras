@@ -1,6 +1,6 @@
 """Add company model and relationships
 
-Revision ID: add_company_model_and_relationships
+Revision ID: add_company_relationships
 Revises: convert_preferences_to_table
 Create Date: 2026-01-27 14:00:00.000000
 
@@ -14,7 +14,7 @@ from sqlalchemy import inspect, text
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'add_company_model_and_relationships'
+revision: str = 'add_company_relationships'
 down_revision: Union[str, None] = 'convert_preferences_to_table'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
