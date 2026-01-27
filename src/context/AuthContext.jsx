@@ -113,11 +113,32 @@ export const AuthProvider = ({ children }) => {
                 },
                 password: '123',
                 createdAt: new Date().toISOString(),
-                role: 'empreendedor'
+                role: 'admin'
             };
             
             existingUsers.push(testUser);
             localStorage.setItem('users', JSON.stringify(existingUsers));
+        } else {
+            // Atualizar usuário de teste existente para ter role admin
+            const testUserIndex = existingUsers.findIndex(u => u.email === 'teste');
+            if (testUserIndex !== -1 && existingUsers[testUserIndex].role !== 'admin') {
+                existingUsers[testUserIndex].role = 'admin';
+                localStorage.setItem('users', JSON.stringify(existingUsers));
+                
+                // Se o usuário de teste estiver logado, atualizar também
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    try {
+                        const currentUser = JSON.parse(storedUser);
+                        if (currentUser.email === 'teste') {
+                            currentUser.role = 'admin';
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                        }
+                    } catch (error) {
+                        console.error('Erro ao atualizar usuário logado:', error);
+                    }
+                }
+            }
         }
 
         // Carregar usuário logado
