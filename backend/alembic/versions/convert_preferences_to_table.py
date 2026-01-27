@@ -90,18 +90,13 @@ def upgrade() -> None:
             pref_id = str(uuid.uuid4())
             
             # Insert into user_preferences table
-            conn.execute(text("""
+            conn.execute(text(f"""
                 INSERT INTO user_preferences (id, user_id, dark_mode, notifications)
-                VALUES (:id, :user_id, :dark_mode, :notifications)
+                VALUES ('{pref_id}', '{user_id}', {dark_mode}, {notifications})
                 ON CONFLICT (user_id) DO UPDATE
                 SET dark_mode = EXCLUDED.dark_mode,
                     notifications = EXCLUDED.notifications
-            """), {
-                'id': pref_id,
-                'user_id': user_id,
-                'dark_mode': dark_mode,
-                'notifications': notifications
-            })
+            """))
         
         # Remove the JSON column from users table
         op.drop_column('users', 'preferences')
@@ -130,16 +125,13 @@ def downgrade() -> None:
             prefs_json = json.dumps({
                 'darkMode': dark_mode,
                 'notifications': notifications
-            })
+            }).replace("'", "''")
             
-            conn.execute(text("""
+            conn.execute(text(f"""
                 UPDATE users
-                SET preferences = :prefs::jsonb
-                WHERE id = :user_id
-            """), {
-                'prefs': prefs_json,
-                'user_id': user_id
-            })
+                SET preferences = '{prefs_json}'::jsonb
+                WHERE id = '{user_id}'
+            """))
         
         # Drop user_preferences table
         op.drop_index(op.f('ix_user_preferences_user_id'), table_name='user_preferences')

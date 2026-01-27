@@ -27,6 +27,23 @@ def table_exists(table_name: str) -> bool:
     return table_name in inspector.get_table_names()
 
 
+def escape_sql_string(value) -> str:
+    """Escape a string value for SQL insertion, handling None."""
+    if value is None:
+        return 'NULL'
+    return f"'{str(value).replace("'", "''")}'"
+
+
+def escape_json_value(value) -> str:
+    """Escape a JSON value for SQL insertion, handling None."""
+    if value is None:
+        return 'NULL'
+    import json
+    # Convert to JSON string and escape single quotes for SQL
+    json_str = json.dumps(value, ensure_ascii=False).replace("'", "''")
+    return f"'{json_str}'::jsonb"
+
+
 def upgrade() -> None:
     # 1. Create companies table
     op.create_table(
@@ -80,22 +97,14 @@ def upgrade() -> None:
             company_id = str(uuid.uuid4())
             
             # Insert company from user data
-            conn.execute(text("""
+            conn.execute(text(f"""
                 INSERT INTO companies (id, user_id, razao_social, nome_fantasia, cnpj, 
                                       inscricao_estadual, email, telefone, endereco, created_at)
-                VALUES (:id, :user_id, :razao_social, :nome_fantasia, :cnpj, 
-                        :inscricao_estadual, :email, :telefone, :endereco, now())
-            """), {
-                'id': company_id,
-                'user_id': user_id,
-                'razao_social': user_row[1],
-                'nome_fantasia': user_row[2],
-                'cnpj': user_row[3],
-                'inscricao_estadual': user_row[4],
-                'email': user_row[5],
-                'telefone': user_row[6],
-                'endereco': user_row[7] if user_row[7] else None
-            })
+                VALUES ('{company_id}', '{user_id}', {escape_sql_string(user_row[1])}, 
+                        {escape_sql_string(user_row[2])}, {escape_sql_string(user_row[3])}, 
+                        {escape_sql_string(user_row[4])}, {escape_sql_string(user_row[5])}, 
+                        {escape_sql_string(user_row[6])}, {escape_json_value(user_row[7])}, now())
+            """))
 
     # 4. Add company_id column to processes table
     if table_exists('processes'):
@@ -123,43 +132,32 @@ def upgrade() -> None:
             if not company_id:
                 # If no company exists for this user, create one
                 # Get user data
-                user_result = conn.execute(text("""
+                user_result = conn.execute(text(f"""
                     SELECT razao_social, nome_fantasia, cnpj, inscricao_estadual, 
                            email, telefone, endereco
                     FROM users
-                    WHERE id = :user_id
-                """), {'user_id': applicant_id})
+                    WHERE id = '{applicant_id}'
+                """))
                 
                 user_data = user_result.fetchone()
                 
                 if user_data:
                     company_id = str(uuid.uuid4())
-                    conn.execute(text("""
+                    conn.execute(text(f"""
                         INSERT INTO companies (id, user_id, razao_social, nome_fantasia, cnpj, 
                                               inscricao_estadual, email, telefone, endereco, created_at)
-                        VALUES (:id, :user_id, :razao_social, :nome_fantasia, :cnpj, 
-                                :inscricao_estadual, :email, :telefone, :endereco, now())
-                    """), {
-                        'id': company_id,
-                        'user_id': applicant_id,
-                        'razao_social': user_data[0],
-                        'nome_fantasia': user_data[1],
-                        'cnpj': user_data[2],
-                        'inscricao_estadual': user_data[3],
-                        'email': user_data[4],
-                        'telefone': user_data[5],
-                        'endereco': user_data[6] if user_data[6] else None
-                    })
+                        VALUES ('{company_id}', '{applicant_id}', {escape_sql_string(user_data[0])}, 
+                                {escape_sql_string(user_data[1])}, {escape_sql_string(user_data[2])}, 
+                                {escape_sql_string(user_data[3])}, {escape_sql_string(user_data[4])}, 
+                                {escape_sql_string(user_data[5])}, {escape_json_value(user_data[6])}, now())
+                    """))
             
             # Update process with company_id
-            conn.execute(text("""
+            conn.execute(text(f"""
                 UPDATE processes 
-                SET company_id = :company_id 
-                WHERE id = :process_id
-            """), {
-                'company_id': company_id,
-                'process_id': process_id
-            })
+                SET company_id = '{company_id}' 
+                WHERE id = '{process_id}'
+            """))
 
     # 5. Make company_id NOT NULL and add foreign key constraint
     if table_exists('processes'):

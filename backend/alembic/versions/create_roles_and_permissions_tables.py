@@ -73,16 +73,14 @@ def upgrade() -> None:
         ('manage_activities', 'Gerenciar atividades', 'admin'),
     ]
     
+    conn = op.get_bind()
     for perm_id, perm_name, category in permissions:
-        op.execute(text("""
+        # Escape single quotes in strings
+        perm_name_escaped = perm_name.replace("'", "''")
+        conn.execute(text(f"""
             INSERT INTO permissions (id, name, description, category, is_active, created_at)
-            VALUES (:id, :name, :description, :category, true, now())
-        """), {
-            'id': perm_id,
-            'name': perm_name,
-            'description': perm_name,
-            'category': category
-        })
+            VALUES ('{perm_id}', '{perm_name_escaped}', '{perm_name_escaped}', '{category}', true, now())
+        """))
 
     # 5. Insert default roles
     roles = [
@@ -92,15 +90,13 @@ def upgrade() -> None:
     ]
     
     for role_id, role_name, description, is_default in roles:
-        op.execute(text("""
+        # Escape single quotes in strings
+        role_name_escaped = role_name.replace("'", "''")
+        description_escaped = description.replace("'", "''")
+        conn.execute(text(f"""
             INSERT INTO roles (id, name, description, is_default, is_active, created_at)
-            VALUES (:id, :name, :description, :is_default, true, now())
-        """), {
-            'id': role_id,
-            'name': role_name,
-            'description': description,
-            'is_default': is_default
-        })
+            VALUES ('{role_id}', '{role_name_escaped}', '{description_escaped}', {is_default}, true, now())
+        """))
 
     # 6. Associate permissions to roles
     role_permissions_map = {
@@ -130,13 +126,10 @@ def upgrade() -> None:
     
     for role_id, permission_ids in role_permissions_map.items():
         for perm_id in permission_ids:
-            op.execute(text("""
+            conn.execute(text(f"""
                 INSERT INTO role_permissions (role_id, permission_id)
-                VALUES (:role_id, :permission_id)
-            """), {
-                'role_id': role_id,
-                'permission_id': perm_id
-            })
+                VALUES ('{role_id}', '{perm_id}')
+            """))
 
     # 7. Add role_id column to users table
     op.add_column('users', sa.Column('role_id', sa.String(), nullable=True))

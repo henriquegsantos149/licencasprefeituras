@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 
 
 # revision identifiers, used by Alembic.
@@ -34,11 +34,11 @@ def upgrade() -> None:
         op.add_column('users', sa.Column('preferences', sa.JSON(), nullable=True))
     
     # Set default preferences for existing users (safe to run even if column already exists)
-    op.execute("""
+    op.execute(text("""
         UPDATE users 
         SET preferences = '{"darkMode": false, "notifications": true}'::jsonb 
         WHERE preferences IS NULL
-    """)
+    """))
 
 
 def downgrade() -> None:
