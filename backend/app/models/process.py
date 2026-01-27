@@ -24,8 +24,8 @@ class Process(Base):
     __tablename__ = "processes"
     
     id = Column(String, primary_key=True, index=True)
-    applicant_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    activity_id = Column(String, ForeignKey("activities.id"), nullable=False, index=True)
+    company_id = Column(String, ForeignKey("companies.id", ondelete='CASCADE'), nullable=False, index=True)
+    activity_id = Column(String, ForeignKey("activities.id", ondelete='CASCADE'), nullable=False, index=True)
     
     # Applicant info (denormalized for quick access)
     applicant_name = Column(String, nullable=False)
@@ -45,7 +45,7 @@ class Process(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    applicant_user = relationship("User", back_populates="processes")
+    company = relationship("Company", back_populates="processes")
     activity = relationship("Activity", back_populates="processes")
     documents = relationship("ProcessDocument", back_populates="process", cascade="all, delete-orphan")
     history = relationship("ProcessHistory", back_populates="process", cascade="all, delete-orphan", order_by="ProcessHistory.created_at")

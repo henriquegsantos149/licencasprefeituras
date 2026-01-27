@@ -46,6 +46,7 @@ class ProcessHistoryResponse(BaseModel):
 
 class ProcessCreate(BaseModel):
     """Schema for creating a new process."""
+    company_id: str
     activity_id: str
     applicant_name: str
     process_data: Optional[Dict] = None
@@ -62,9 +63,10 @@ class ProcessUpdate(BaseModel):
 class ProcessResponse(BaseModel):
     """Schema for process response."""
     id: str
-    applicant_id: str
+    company_id: str
     activity_id: str
     applicant_name: str
+    company_name: Optional[str] = None  # Company razao_social
     activity_name: Optional[str] = None
     status: ProcessStatus
     deadline_agency: Optional[date] = None
@@ -76,3 +78,17 @@ class ProcessResponse(BaseModel):
     history: List[ProcessHistoryResponse] = []
     
     model_config = {"from_attributes": True}
+    
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        """Override to include company name from relationship."""
+        if hasattr(obj, '__dict__'):
+            data = obj.__dict__.copy()
+            # Extract company name from relationship
+            if hasattr(obj, 'company') and obj.company:
+                data['company_name'] = obj.company.razao_social
+            # Extract activity name from relationship
+            if hasattr(obj, 'activity') and obj.activity:
+                data['activity_name'] = obj.activity.name
+            return super().model_validate(data, **kwargs)
+        return super().model_validate(obj, **kwargs)

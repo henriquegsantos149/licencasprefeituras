@@ -24,6 +24,7 @@ class Activity(Base):
     
     # Relationships
     processes = relationship("Process", back_populates="activity", lazy="dynamic")
+    companies = relationship("Company", secondary="company_activities", back_populates="activities", lazy="dynamic")
     
     def __repr__(self):
         return f"<Activity(id={self.id}, name={self.name})>"

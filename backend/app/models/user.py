@@ -40,7 +40,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    processes = relationship("Process", back_populates="applicant_user", lazy="dynamic")
+    companies = relationship("Company", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
     preferences = relationship("UserPreferences", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     def __repr__(self):

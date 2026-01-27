@@ -2,6 +2,12 @@
 Pydantic schemas for request/response validation.
 """
 from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
+from app.schemas.company import (
+    CompanyCreate,
+    CompanyResponse,
+    CompanyUpdate,
+    CompanyActivityAssociation,
+)
 from app.schemas.process import (
     ProcessCreate,
     ProcessResponse,
@@ -17,6 +23,10 @@ __all__ = [
     "UserResponse",
     "UserLogin",
     "Token",
+    "CompanyCreate",
+    "CompanyResponse",
+    "CompanyUpdate",
+    "CompanyActivityAssociation",
     "ProcessCreate",
     "ProcessResponse",
     "ProcessUpdate",
