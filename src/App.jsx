@@ -1,28 +1,51 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import NewProcess from './pages/NewProcess';
 import ProcessDetails from './pages/ProcessDetails';
 import Admin from './pages/Admin';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import { WorkflowProvider } from './context/WorkflowContext';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   return (
-    <WorkflowProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="new" element={<NewProcess />} />
-            <Route path="process/:id" element={<ProcessDetails />} />
-            <Route path="admin" element={<Admin />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </WorkflowProvider>
+    <AuthProvider>
+      <WorkflowProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Rota raiz - página inicial é o login */}
+            <Route path="/" element={<Login />} />
+            
+            {/* Rotas públicas */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Rotas protegidas - todas dentro do Layout */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/new" element={<NewProcess />} />
+              <Route path="/process/:id" element={<ProcessDetails />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            
+            {/* Redirecionar rotas desconhecidas para login (página inicial) */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </WorkflowProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,0 +1,75 @@
+"""
+Pydantic schemas for user-related operations.
+"""
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Optional, Dict
+from datetime import datetime
+from app.models.user import UserRole
+
+
+class Address(BaseModel):
+    """Address schema."""
+    cep: Optional[str] = None
+    logradouro: Optional[str] = None
+    numero: Optional[str] = None
+    complemento: Optional[str] = None
+    bairro: Optional[str] = None
+    cidade: Optional[str] = None
+    uf: Optional[str] = None
+
+
+class UserCreate(BaseModel):
+    """Schema for user registration."""
+    razao_social: str = Field(..., min_length=1)
+    nome_fantasia: Optional[str] = None
+    cnpj: str = Field(..., min_length=14, max_length=18)
+    inscricao_estadual: Optional[str] = None
+    email: EmailStr
+    telefone: Optional[str] = None
+    password: str = Field(..., min_length=6)
+    confirm_password: str = Field(..., min_length=6)
+    endereco: Optional[Address] = None
+    role: UserRole = UserRole.EMPREENDEDOR
+    
+    @field_validator('cnpj')
+    @classmethod
+    def validate_cnpj(cls, v):
+        """Clean CNPJ by removing non-numeric characters."""
+        return ''.join(filter(str.isdigit, v))
+    
+    @field_validator('telefone')
+    @classmethod
+    def validate_telefone(cls, v):
+        """Clean phone by removing non-numeric characters."""
+        if v:
+            return ''.join(filter(str.isdigit, v))
+        return v
+
+
+class UserLogin(BaseModel):
+    """Schema for user login."""
+    email: EmailStr
+    password: str
+
+
+class UserResponse(BaseModel):
+    """Schema for user response (without password)."""
+    id: str
+    razao_social: str
+    nome_fantasia: Optional[str]
+    cnpj: str
+    inscricao_estadual: Optional[str]
+    email: str
+    telefone: Optional[str]
+    endereco: Optional[Dict] = None
+    role: UserRole
+    created_at: datetime
+    
+    model_config = {"from_attributes": True}
+
+
+class Token(BaseModel):
+    """Schema for authentication token."""
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

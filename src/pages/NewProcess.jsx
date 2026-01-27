@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkflow, ACTIVITIES } from '../context/WorkflowContext';
+import { useAuth } from '../context/AuthContext';
 import { Upload, CheckCircle, AlertCircle, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const NewProcess = () => {
     const navigate = useNavigate();
     const { addProcess } = useWorkflow();
+    const { user } = useAuth();
 
     const [step, setStep] = useState(1);
     const [activityKey, setActivityKey] = useState('');
-    const [applicantName, setApplicantName] = useState('Empresa Modelo Ltda');
+    const [applicantName, setApplicantName] = useState('');
     const [answers, setAnswers] = useState({});
     const [uploads, setUploads] = useState({});
+
+    // Preencher nome do requerente com dados do usuário logado
+    useEffect(() => {
+        if (user) {
+            setApplicantName(user.razaoSocial);
+        }
+    }, [user]);
 
     const activityData = ACTIVITIES[activityKey];
 
@@ -36,7 +45,7 @@ const NewProcess = () => {
                 docs: uploads,
                 data: answers
             });
-            navigate('/');
+            navigate('/dashboard');
         }
     };
 

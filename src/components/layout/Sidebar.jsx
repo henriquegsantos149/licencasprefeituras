@@ -1,10 +1,14 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FilePlus, Users, Settings, LogOut, X } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, FilePlus, Users, Settings, LogOut, X, Building2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isOpen, onClose }) => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    
     const navItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: FilePlus, label: 'Novo Processo', path: '/new' },
         { icon: Users, label: 'Gestão Municipal', path: '/admin' },
         { icon: Settings, label: 'Configurações', path: '/settings' },
@@ -15,6 +19,12 @@ const Sidebar = ({ isOpen, onClose }) => {
         if (window.innerWidth < 768) {
             onClose();
         }
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/', { replace: true });
+        onClose();
     };
 
     return (
@@ -56,20 +66,27 @@ const Sidebar = ({ isOpen, onClose }) => {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-slate-50">
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-cta text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                            HM
+                {user && (
+                    <div className="p-4 border-t border-slate-50">
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-cta text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                <Building2 className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-bold text-slate-700 truncate">
+                                    {user.nomeFantasia || user.razaoSocial}
+                                </span>
+                                <span className="text-xs text-slate-400 truncate">{user.email}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-bold text-slate-700 truncate">Henrique M.</span>
-                            <span className="text-xs text-slate-400">Consultor</span>
-                        </div>
+                        <button 
+                            onClick={handleLogout}
+                            className="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors py-2"
+                        >
+                            <LogOut className="w-3 h-3" /> Sair do Sistema
+                        </button>
                     </div>
-                    <button className="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-400 hover:text-red-500 transition-colors py-2">
-                        <LogOut className="w-3 h-3" /> Sair do Sistema
-                    </button>
-                </div>
+                )}
             </aside>
         </>
     );

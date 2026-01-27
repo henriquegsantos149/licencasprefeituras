@@ -4,3 +4,40 @@ __pycache__/
 *.pyc
 credentials.json
 token.json
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Backend
+backend/.env
+backend/.secrets
+backend/secrets/*
+!backend/secrets/.gitkeep
+!backend/secrets/*.template
+!backend/secrets/README.md
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/instance/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

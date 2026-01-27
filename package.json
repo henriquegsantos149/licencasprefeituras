@@ -4,7 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/start-dev.js",
+    "dev:frontend": "vite",
+    "dev:backend": "node scripts/start-backend.js",
+    "setup": "node scripts/setup-env.js",
+    "fix-postgres": "node scripts/fix-postgres-user.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

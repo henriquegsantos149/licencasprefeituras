@@ -105,15 +105,50 @@ cp .env.example .env
 ```
 *(Caso esteja no Windows sem bash, apenas duplique o arquivo `.env.example` e renomeie para `.env` manualmente)*
 
-### 4. Iniciar o servidor de desenvolvimento
+### 4. Configurar Backend (Primeira vez)
+
+Se você ainda não configurou o backend:
+
+```bash
+# Configurar variáveis de ambiente
+cd backend
+cp .env.example .env
+# Edite .env com suas configurações
+
+# Configurar secrets
+cd secrets
+cp DATABASE_PASSWORD.template DATABASE_PASSWORD
+cp SECRET_KEY.template SECRET_KEY
+# Edite cada arquivo com valores reais
+cd ..
+
+# Criar migration inicial (primeira vez)
+cd ..
+python execution/create_initial_migration.py
+
+# Aplicar migrations
+python execution/init_database.py
+```
+
+### 5. Iniciar o servidor de desenvolvimento
 
 ```bash
 npm run dev
 ```
 
-O projeto estará rodando em `http://localhost:5173`.
+**O que acontece automaticamente:**
+- ✅ Verifica e aplica migrations do banco de dados
+- 🚀 Inicia o backend em `http://localhost:8000`
+- 🚀 Inicia o frontend em `http://localhost:5173`
 
-### 5. Build para produção
+**Scripts disponíveis:**
+- `npm run dev` - Inicia frontend + backend (com verificação de migrations)
+- `npm run dev:frontend` - Apenas frontend
+- `npm run dev:backend` - Apenas backend (com verificação de migrations)
+
+Veja `README_SCRIPTS.md` para mais detalhes sobre os scripts.
+
+### 6. Build para produção
 
 ```bash
 npm run build
@@ -121,7 +156,7 @@ npm run build
 
 Os arquivos otimizados serão gerados na pasta `dist/`.
 
-### 6. Preview da build
+### 7. Preview da build
 
 ```bash
 npm run preview
