@@ -15,8 +15,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider>
         <WorkflowProvider>
           <BrowserRouter>
             <Routes>
@@ -47,8 +47,8 @@ function App() {
             </Routes>
           </BrowserRouter>
         </WorkflowProvider>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

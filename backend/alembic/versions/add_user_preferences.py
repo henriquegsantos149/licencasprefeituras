@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 
 # revision identifiers, used by Alembic.
@@ -18,10 +19,21 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+def column_exists(table_name: str, column_name: str) -> bool:
+    """Check if a column exists in a table."""
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = [col['name'] for col in inspector.get_columns(table_name)]
+    return column_name in columns
+
+
 def upgrade() -> None:
-    # Add preferences column to users table
-    op.add_column('users', sa.Column('preferences', sa.JSON(), nullable=True))
-    # Set default preferences for existing users
+    # Check if preferences column already exists
+    if not column_exists('users', 'preferences'):
+        # Add preferences column to users table
+        op.add_column('users', sa.Column('preferences', sa.JSON(), nullable=True))
+    
+    # Set default preferences for existing users (safe to run even if column already exists)
     op.execute("""
         UPDATE users 
         SET preferences = '{"darkMode": false, "notifications": true}'::jsonb 
@@ -30,5 +42,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Remove preferences column from users table
-    op.drop_column('users', 'preferences')
+    # Remove preferences column from users table (only if it exists)
+    if column_exists('users', 'preferences'):
+        op.drop_column('users', 'preferences')

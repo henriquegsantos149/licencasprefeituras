@@ -73,6 +73,27 @@ class UserResponse(BaseModel):
     created_at: datetime
     
     model_config = {"from_attributes": True}
+    
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        """Override to convert UserPreferences relationship to dict format."""
+        # Convert the object to dict first
+        if hasattr(obj, '__dict__'):
+            data = obj.__dict__.copy()
+            # Convert UserPreferences relationship to dict
+            if hasattr(obj, 'preferences') and obj.preferences:
+                data['preferences'] = {
+                    'darkMode': obj.preferences.dark_mode,
+                    'notifications': obj.preferences.notifications
+                }
+            elif hasattr(obj, 'preferences') and obj.preferences is None:
+                # Default preferences if not set
+                data['preferences'] = {
+                    'darkMode': False,
+                    'notifications': True
+                }
+            return super().model_validate(data, **kwargs)
+        return super().model_validate(obj, **kwargs)
 
 
 class UserUpdate(BaseModel):

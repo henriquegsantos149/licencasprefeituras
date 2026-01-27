@@ -1,11 +1,13 @@
 """
 User management routes.
 """
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
 from app.models.user import User
+from app.models.user_preferences import UserPreferences
 from app.schemas.user import UserResponse, UserUpdate, UserPreferencesUpdate
 from app.auth import get_current_active_user
 
@@ -20,7 +22,7 @@ async def get_users(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get list of users (requires authentication)."""
-    users = db.query(User).offset(skip).limit(limit).all()
+    users = db.query(User).options(joinedload(User.preferences)).offset(skip).limit(limit).all()
     return [UserResponse.model_validate(user) for user in users]
 
 
@@ -31,7 +33,7 @@ async def get_user(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get a specific user by ID."""
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).options(joinedload(User.preferences)).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -57,6 +59,8 @@ async def update_current_user(
     
     db.commit()
     db.refresh(current_user)
+    # Reload preferences relationship
+    db.refresh(current_user, ['preferences'])
     return UserResponse.model_validate(current_user)
 
 
@@ -67,21 +71,35 @@ async def update_user_preferences(
     current_user: User = Depends(get_current_active_user)
 ):
     """Update current user's preferences."""
-    # Initialize preferences if None
+    # Get or create UserPreferences
     if current_user.preferences is None:
-        current_user.preferences = {"darkMode": False, "notifications": True}
+        user_prefs = UserPreferences(
+            id=str(uuid.uuid4()),
+            user_id=current_user.id,
+            dark_mode=False,
+            notifications=True
+        )
+        db.add(user_prefs)
+        current_user.preferences = user_prefs
+    else:
+        user_prefs = current_user.preferences
     
     # Update preferences
     prefs_data = preferences.model_dump(exclude_unset=True)
-    for key, value in prefs_data.items():
-        current_user.preferences[key] = value
+    
+    # Map camelCase to snake_case
+    if "darkMode" in prefs_data:
+        user_prefs.dark_mode = prefs_data["darkMode"]
+    if "notifications" in prefs_data:
+        user_prefs.notifications = prefs_data["notifications"]
     
     # Garantir que darkMode sempre tenha um valor (padrão: False - modo claro)
-    if "darkMode" not in current_user.preferences:
-        current_user.preferences["darkMode"] = False
+    if user_prefs.dark_mode is None:
+        user_prefs.dark_mode = False
     
     db.commit()
     db.refresh(current_user)
+    db.refresh(user_prefs)
     return UserResponse.model_validate(current_user)
 
 
@@ -91,12 +109,22 @@ async def get_user_preferences(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get current user's preferences."""
+    # Reload preferences relationship
+    db.refresh(current_user, ['preferences'])
+    
     if current_user.preferences is None:
         return {"darkMode": False, "notifications": True}
+    
+    # Convert UserPreferences to dict format
+    prefs = {
+        "darkMode": current_user.preferences.dark_mode if current_user.preferences.dark_mode is not None else False,
+        "notifications": current_user.preferences.notifications if current_user.preferences.notifications is not None else True
+    }
+    
     # Garantir que darkMode sempre tenha um valor (padrão: False - modo claro)
-    prefs = current_user.preferences.copy() if current_user.preferences else {}
-    if "darkMode" not in prefs:
+    if prefs.get("darkMode") is None:
         prefs["darkMode"] = False
-    if "notifications" not in prefs:
+    if prefs.get("notifications") is None:
         prefs["notifications"] = True
+    
     return prefs

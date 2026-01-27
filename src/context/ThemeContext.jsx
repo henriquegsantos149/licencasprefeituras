@@ -14,7 +14,22 @@ export const useTheme = () => {
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 export const ThemeProvider = ({ children }) => {
-    const { user, isAuthenticated } = useAuth();
+    // useAuth pode lançar erro se AuthProvider não estiver disponível
+    // Usar verificação segura com try-catch
+    let user = null;
+    let isAuthenticated = false;
+    
+    try {
+        const authContext = useAuth();
+        user = authContext?.user || null;
+        isAuthenticated = authContext?.isAuthenticated || false;
+    } catch (error) {
+        // Se useAuth falhar (contexto não disponível), usar valores padrão
+        // Isso não deve acontecer se AuthProvider estiver acima do ThemeProvider
+        user = null;
+        isAuthenticated = false;
+    }
+    
     const [darkMode, setDarkMode] = useState(() => {
         // Carregar preferência do localStorage
         // Se não houver nada salvo, usar modo claro como padrão

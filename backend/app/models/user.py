@@ -32,9 +32,6 @@ class User(Base):
     # Address fields stored as JSON
     endereco = Column(JSON, nullable=True)
     
-    # User preferences stored as JSON (darkMode, notifications, etc.)
-    preferences = Column(JSON, nullable=True, default=lambda: {"darkMode": False, "notifications": True})
-    
     # Role and permissions
     role = Column(SQLEnum(UserRole), default=UserRole.EMPREENDEDOR, nullable=False)
     
@@ -44,6 +41,7 @@ class User(Base):
     
     # Relationships
     processes = relationship("Process", back_populates="applicant_user", lazy="dynamic")
+    preferences = relationship("UserPreferences", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, role={self.role.value})>"
