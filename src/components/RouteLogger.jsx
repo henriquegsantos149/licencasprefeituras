@@ -2,54 +2,29 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
- * Componente para logar mudanças de rota no console
+ * Componente para logar mudanças de rota no console e no terminal do servidor
  * Exibe mensagens formatadas quando o usuário navega entre páginas
- * Formato: [NAV] Nome da Rota - /path @ timestamp
+ * Formato: [NAV] - NAV - rota - 0ms (seguindo padrão das rotas HTTP)
  */
 const RouteLogger = () => {
     const location = useLocation();
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const isDevelopment = import.meta.env.DEV;
 
     useEffect(() => {
-        // Obter nome da rota baseado no pathname
-        const getRouteName = (pathname) => {
-            const routeMap = {
-                '/': 'Login',
-                '/login': 'Login',
-                '/register': 'Registro',
-                '/dashboard': 'Dashboard',
-                '/new': 'Novo Processo',
-                '/settings': 'Configurações',
-                '/admin': 'Gestão Municipal',
-            };
-
-            // Verificar se é uma rota dinâmica (ex: /process/:id)
-            if (pathname.startsWith('/process/')) {
-                const processId = pathname.split('/process/')[1];
-                return `Detalhes do Processo (ID: ${processId})`;
-            }
-
-            return routeMap[pathname] || pathname;
-        };
-
-        const routeName = getRouteName(location.pathname);
-        const timestamp = new Date().toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit' 
-        });
-
-        // Formato padronizado similar ao backend: [NAV] Nome - path @ timestamp
-        const logMessage = `[NAV] ${routeName.padEnd(30)} - ${location.pathname.padEnd(25)} @ ${timestamp}`;
+        // Formato padronizado: [NAV] - NAV - rota - 0ms (seguindo padrão das rotas HTTP)
+        const logMessage = `[NAV] - NAV   - ${location.pathname.padEnd(40)} -    0.00ms`;
 
         // Criar mensagem formatada com cores para console do navegador
-        const styledMessage = `%c[NAV]%c ${routeName} %c- ${location.pathname} %c@ ${timestamp}`;
+        const styledMessage = `%c[NAV]%c - NAV   - %c${location.pathname}%c -    0.00ms`;
         
         // Estilos para o console (cores similares ao backend)
         const styles = [
-            'color: #6366f1; font-weight: bold;', // [NAV] - azul
-            'color: #10b981; font-weight: bold;', // Nome da rota - verde
-            'color: #6b7280;', // Path - cinza
-            'color: #9ca3af; font-size: 0.9em;' // Timestamp - cinza claro
+            'color: #00bcd4; font-weight: bold;', // [NAV] - ciano (igual ao backend)
+            'color: #6b7280;', // Separador
+            'color: #10b981; font-weight: bold;', // Path - verde
+            'color: #6b7280;', // Separador
+            'color: #9ca3af; font-size: 0.9em;' // Tempo - cinza claro
         ];
 
         // Log formatado com cores (console do navegador)
@@ -57,7 +32,26 @@ const RouteLogger = () => {
         
         // Log simples para compatibilidade e fácil leitura
         console.log(logMessage);
-    }, [location]);
+
+        // Enviar log para o backend (apenas em desenvolvimento)
+        if (isDevelopment) {
+            // Usar fetch sem await para não bloquear a navegação
+            fetch(`${API_BASE_URL}/dev/log`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'NAV',
+                    route: location.pathname
+                })
+            }).catch(error => {
+                // Silenciosamente falhar se o backend não estiver disponível
+                // Não queremos quebrar a aplicação por causa de logs
+                console.debug('Não foi possível enviar log para o servidor:', error);
+            });
+        }
+    }, [location, API_BASE_URL, isDevelopment]);
 
     return null; // Componente não renderiza nada
 };

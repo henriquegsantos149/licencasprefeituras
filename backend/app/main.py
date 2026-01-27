@@ -31,6 +31,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         method = request.method
         route = request.url.path
         
+        # Pular logging do endpoint de log para evitar duplicação
+        if route == "/dev/log":
+            return response
+        
         # Determinar cor do status code (para melhor visualização)
         if status_code >= 500:
             status_color = "\033[91m"  # Vermelho para erros do servidor
@@ -45,8 +49,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         
         reset_color = "\033[0m"
         
-        # Log no formato: [status] METHOD route - tempo de resposta
-        log_message = f"{status_color}[{status_code}]{reset_color} {method:6s} {route:40s} - {process_time:7.2f}ms"
+        # Log no formato: [status] - Method - rota - tempo de resposta
+        log_message = f"{status_color}[{status_code}]{reset_color} - {method:6s} - {route:40s} - {process_time:7.2f}ms"
         
         # Usar sys.stderr para garantir que apareça no terminal (mesmo padrão do uvicorn)
         sys.stderr.write(log_message + "\n")
@@ -95,3 +99,39 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+@app.post("/dev/log")
+async def dev_log(request: Request):
+    """
+    Endpoint para receber logs do frontend (apenas em desenvolvimento).
+    Loga mudanças de rota e outras informações de debug.
+    """
+    try:
+        data = await request.json()
+        log_type = data.get("type", "INFO")
+        route = data.get("route", "")
+        
+        # Determinar cor baseado no tipo
+        if log_type == "NAV":
+            color = "\033[96m"  # Ciano para navegação
+        elif log_type == "ERROR":
+            color = "\033[91m"  # Vermelho para erros
+        elif log_type == "WARN":
+            color = "\033[93m"  # Amarelo para avisos
+        else:
+            color = "\033[92m"  # Verde para info
+        
+        reset_color = "\033[0m"
+        
+        # Formato: [NAV] - NAV - rota - 0ms (seguindo padrão das rotas HTTP)
+        log_message = f"{color}[{log_type}]{reset_color} - NAV   - {route:40s} -    0.00ms"
+        
+        # Escrever no stderr (terminal)
+        sys.stderr.write(log_message + "\n")
+        sys.stderr.flush()
+        
+        return {"status": "logged"}
+    except Exception as e:
+        # Em caso de erro, não quebrar a aplicação
+        return {"status": "error", "message": str(e)}
