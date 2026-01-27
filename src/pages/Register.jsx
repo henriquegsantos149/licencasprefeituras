@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, formatCNPJ, formatPhone, formatCEP } from '../context/AuthContext';
 import { Building2, Mail, Lock, Phone, MapPin, AlertCircle, CheckCircle, Loader } from 'lucide-react';
