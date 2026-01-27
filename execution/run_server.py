@@ -20,5 +20,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,  # Auto-reload on code changes
-        log_level="info"
+        log_level="info",
+        access_log=True  # Garantir que access log está habilitado
     )

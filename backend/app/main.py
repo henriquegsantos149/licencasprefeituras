@@ -2,6 +2,7 @@
 Main FastAPI application.
 """
 import time
+import sys
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -25,12 +26,31 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         # Calcular tempo de resposta em milissegundos
         process_time = (time.time() - start_time) * 1000
         
-        # Obter status code e rota
+        # Obter informações da requisição
         status_code = response.status_code
+        method = request.method
         route = request.url.path
         
-        # Log no formato: [status] - rota - tempo de resposta
-        print(f"[{status_code}] - {route} - {process_time:.2f}ms")
+        # Determinar cor do status code (para melhor visualização)
+        if status_code >= 500:
+            status_color = "\033[91m"  # Vermelho para erros do servidor
+        elif status_code >= 400:
+            status_color = "\033[93m"  # Amarelo para erros do cliente
+        elif status_code >= 300:
+            status_color = "\033[96m"  # Ciano para redirecionamentos
+        elif status_code >= 200:
+            status_color = "\033[92m"  # Verde para sucesso
+        else:
+            status_color = "\033[0m"   # Reset
+        
+        reset_color = "\033[0m"
+        
+        # Log no formato: [status] METHOD route - tempo de resposta
+        log_message = f"{status_color}[{status_code}]{reset_color} {method:6s} {route:40s} - {process_time:7.2f}ms"
+        
+        # Usar sys.stderr para garantir que apareça no terminal (mesmo padrão do uvicorn)
+        sys.stderr.write(log_message + "\n")
+        sys.stderr.flush()
         
         return response
 

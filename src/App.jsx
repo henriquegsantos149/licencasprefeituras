@@ -13,6 +13,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import RoleProtectedRoute from './components/auth/RoleProtectedRoute';
+import RouteLogger from './components/RouteLogger';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <ThemeProvider>
         <WorkflowProvider>
           <BrowserRouter>
+            <RouteLogger />
             <Routes>
               {/* Rota raiz - página inicial é o login */}
               <Route path="/" element={<Login />} />
