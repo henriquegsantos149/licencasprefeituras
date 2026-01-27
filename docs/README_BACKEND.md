@@ -234,7 +234,7 @@ curl -X GET "http://localhost:8000/api/v1/processes/" \
 
 ## 🔄 Migrations do Banco de Dados
 
-O projeto usa **Alembic** para gerenciar migrations. Veja `backend/MIGRATIONS.md` para detalhes completos.
+O projeto usa **Alembic** para gerenciar migrations. Veja `docs/MIGRATIONS.md` para detalhes completos.
 
 **Comandos rápidos:**
 

@@ -7,10 +7,17 @@ const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     
+    // Helper function to check if user can access admin
+    const canAccessAdmin = () => {
+        if (!user) return false;
+        return user.role === 'licenciador' || user.role === 'admin';
+    };
+
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: FilePlus, label: 'Novo Processo', path: '/new' },
-        { icon: Users, label: 'Gestão Municipal', path: '/admin' },
+        // Only show Gestão Municipal for licenciadores and admins
+        ...(canAccessAdmin() ? [{ icon: Users, label: 'Gestão Municipal', path: '/admin' }] : []),
         { icon: Settings, label: 'Configurações', path: '/settings' },
     ];
 

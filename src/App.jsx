@@ -12,6 +12,7 @@ import { WorkflowProvider } from './context/WorkflowContext';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import RoleProtectedRoute from './components/auth/RoleProtectedRoute';
 
 function App() {
   return (
@@ -38,7 +39,14 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/new" element={<NewProcess />} />
                 <Route path="/process/:id" element={<ProcessDetails />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <RoleProtectedRoute allowedRoles={['licenciador', 'admin']}>
+                      <Admin />
+                    </RoleProtectedRoute>
+                  } 
+                />
                 <Route path="/settings" element={<Settings />} />
               </Route>
               

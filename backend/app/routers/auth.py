@@ -8,7 +8,9 @@ import uuid
 from app.database import get_db
 from app.models.user import User
 from app.models.user_preferences import UserPreferences
+from app.models.role import Role
 from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
+from app.permissions import get_default_role
 from app.auth import (
     verify_password,
     get_password_hash,
@@ -51,6 +53,18 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Passwords do not match"
         )
     
+    # Get role for user (use provided role or default)
+    if user_data.role:
+        role = db.query(Role).filter(Role.id == user_data.role, Role.is_active == True).first()
+        if not role:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid role: {user_data.role}"
+            )
+    else:
+        # Get default role from database
+        role = get_default_role(db)
+    
     # Create new user
     user_id = str(uuid.uuid4())
     hashed_password = get_password_hash(user_data.password)
@@ -65,7 +79,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         telefone=user_data.telefone,
         password_hash=hashed_password,
         endereco=user_data.endereco.dict() if user_data.endereco else None,
-        role=user_data.role,
+        role_id=role.id,
     )
     
     db.add(new_user)
@@ -83,8 +97,11 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-    # Reload with preferences
-    new_user = db.query(User).options(joinedload(User.preferences)).filter(User.id == new_user.id).first()
+    # Reload with preferences and role
+    new_user = db.query(User).options(
+        joinedload(User.preferences),
+        joinedload(User.role_obj)
+    ).filter(User.id == new_user.id).first()
     
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -103,7 +120,10 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login and get access token."""
-    user = db.query(User).options(joinedload(User.preferences)).filter(User.email == credentials.email.lower()).first()
+    user = db.query(User).options(
+        joinedload(User.preferences),
+        joinedload(User.role_obj)
+    ).filter(User.email == credentials.email.lower()).first()
     
     if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
@@ -144,6 +164,9 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get current user information."""
-    # Reload with preferences
-    user = db.query(User).options(joinedload(User.preferences)).filter(User.id == current_user.id).first()
+    # Reload with preferences and role
+    user = db.query(User).options(
+        joinedload(User.preferences),
+        joinedload(User.role_obj)
+    ).filter(User.id == current_user.id).first()
     return UserResponse.model_validate(user)

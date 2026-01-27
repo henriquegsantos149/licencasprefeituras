@@ -164,9 +164,18 @@ Após iniciar o servidor, acesse:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
-## 🔐 Autenticação
+## 🔐 Autenticação e Autorização
 
-A API usa JWT (JSON Web Tokens) para autenticação.
+A API usa JWT (JSON Web Tokens) para autenticação e um sistema de **roles e permissões baseado em banco de dados**.
+
+### Sistema de Roles
+
+O sistema possui três roles principais:
+- **empreendedor** (default): Acesso a tudo exceto gestão municipal
+- **licenciador**: Acesso à gestão municipal
+- **admin**: Acesso total
+
+Para mais detalhes, consulte `ROLES_AND_PERMISSIONS.md`.
 
 ### Registrar novo usuário
 
@@ -177,6 +186,7 @@ Content-Type: application/json
 {
   "razao_social": "Empresa Teste Ltda",
   "nome_fantasia": "Empresa Teste",
+  "role": "empreendedor"  // Opcional - se não especificado, usa role padrão do banco
   "cnpj": "12345678000190",
   "email": "teste@example.com",
   "password": "senha123",
@@ -265,16 +275,33 @@ backend/
 
 ### User
 - Representa empreendedores e gestores
-- Campos: id, razao_social, cnpj, email, password_hash, role, etc.
+- Campos: id, razao_social, cnpj, email, password_hash, role_id (FK para roles), etc.
+- Relacionamentos: Role, Company, UserPreferences
+
+### Role
+- Representa roles do sistema (empreendedor, licenciador, admin)
+- Campos: id, name, description, is_default, is_active
+- Relacionamentos: User, Permission (N:N)
+
+### Permission
+- Representa permissões do sistema
+- Campos: id, name, description, category, is_active
+- Relacionamentos: Role (N:N)
+
+### Company
+- Representa empresas (pessoa jurídica)
+- Campos: id, user_id, razao_social, cnpj, endereco, etc.
+- Relacionamentos: User, Activity (N:N), Process
 
 ### Process
 - Representa um processo de licenciamento
-- Campos: id, applicant_id, activity_id, status, deadlines, etc.
-- Relacionamentos: User, Activity, ProcessDocument, ProcessHistory
+- Campos: id, company_id, activity_id, status, deadlines, etc.
+- Relacionamentos: Company, Activity, ProcessDocument, ProcessHistory
 
 ### Activity
 - Representa tipos de atividades de licenciamento
 - Campos: id, name, category, risk_level, required_documents, questions
+- Relacionamentos: Company (N:N), Process
 
 ### ProcessDocument
 - Documentos anexados a um processo
@@ -287,6 +314,15 @@ backend/
 ## 🔄 Migrations do Banco de Dados
 
 O projeto usa **Alembic** para gerenciar migrations do banco de dados.
+
+### Migrations Principais
+
+1. **Initial Migration**: Criação inicial de todas as tabelas
+2. **add_company_relationships**: Implementa relacionamentos User → Companies → Activities
+3. **create_roles_and_permissions**: Sistema de roles e permissões no banco de dados
+4. **update_roles_to_licenciador**: Atualiza role GESTOR para LICENCIADOR
+
+Para mais detalhes, consulte `MIGRATIONS.md`.
 
 ### Comandos Úteis
 

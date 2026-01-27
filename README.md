@@ -324,17 +324,35 @@ O projeto utiliza **React Context API** (`WorkflowContext`) para gerenciar:
    - Recebe notificações sobre mudanças de status
    - Acessa documentos e histórico completo
 
+## 🔐 Sistema de Autenticação e Permissões
+
+### Roles e Permissões (Database-Driven)
+
+O sistema possui três roles principais com permissões gerenciadas no banco de dados:
+
+- **EMPREENDEDOR** (default): Acesso a tudo exceto gestão municipal
+- **LICENCIADOR**: Acesso à gestão municipal e gerenciamento de processos
+- **ADMIN**: Acesso total a todas as funcionalidades
+
+Para mais detalhes, consulte:
+- `backend/ROLES_AND_PERMISSIONS.md` - Documentação completa do sistema
+- `backend/DATABASE_ROLES_IMPLEMENTATION.md` - Detalhes técnicos da implementação
+
+### Cadastro de Empreendedores
+
+- ✅ Sistema de cadastro completo para pessoa jurídica
+- ✅ Validação de CNPJ
+- ✅ Formatação automática de campos (CNPJ, telefone, CEP)
+- ✅ Edição de dados cadastrais na página de Settings
+
 ## 🚧 Próximas Melhorias
 
-- [ ] Autocadastro do empreendedor.
 - [ ] Armazenamento e exibição de TR.
-- [ ] Cadastro de usuários do órgão.
 - [ ] Agendamento por parte do empreendedor.
 - [ ] Calendário de vistoria por parte do gestor.
-- [ ] Integração com API backend.
-- [ ] Autenticação e autorização.
 - [ ] Upload real de documentos.
 - [ ] Notificações em tempo real.
+- [ ] Interface administrativa para gerenciar roles e permissões.
 
 ## 🔧 Requisitos do Sistema
 

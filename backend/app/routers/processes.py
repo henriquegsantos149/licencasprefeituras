@@ -18,6 +18,12 @@ from app.schemas.process import (
     ProcessHistoryResponse,
 )
 from app.auth import get_current_active_user
+from app.permissions import (
+    can_view_all_processes,
+    can_manage_processes,
+    require_licenciador_or_admin,
+)
+from app.database import get_db
 
 router = APIRouter(prefix="/processes", tags=["processes"])
 
@@ -46,15 +52,32 @@ async def create_process(
             detail="Activity not found"
         )
     
+    # Verify company exists and belongs to user (for empreendedores)
+    from app.models.company import Company
+    company = db.query(Company).filter(Company.id == process_data.company_id).first()
+    if not company:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Company not found"
+        )
+    
+    # Check if user owns the company
+    # Only users without VIEW_ALL_PROCESSES permission (empreendedores) must own the company
+    if not can_view_all_processes(current_user, db) and company.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to create process for this company"
+        )
+    
     # Create process
     process_id = generate_process_id()
     deadline_agency = date.today() + timedelta(days=30)  # Default 30 days
     
     new_process = Process(
         id=process_id,
-        applicant_id=current_user.id,
+        company_id=process_data.company_id,
         activity_id=process_data.activity_id,
-        applicant_name=process_data.applicant_name or current_user.razao_social,
+        applicant_name=process_data.applicant_name or company.razao_social,
         status=ProcessStatus.ABERTO,
         deadline_agency=deadline_agency,
         process_data=process_data.process_data,
@@ -110,9 +133,12 @@ async def get_processes(
     """Get list of processes."""
     query = db.query(Process)
     
-    # Filter by user role
-    if current_user.role.value == "empreendedor":
-        query = query.filter(Process.applicant_id == current_user.id)
+    # Filter by user role - empreendedores only see their own processes
+    if not can_view_all_processes(current_user, db):
+        # For empreendedores, filter by their companies
+        from app.models.company import Company
+        user_companies = db.query(Company.id).filter(Company.user_id == current_user.id).subquery()
+        query = query.filter(Process.company_id.in_(user_companies))
     
     # Filter by status if provided
     if status_filter:
@@ -148,12 +174,17 @@ async def get_process(
             detail="Process not found"
         )
     
-    # Check permissions
-    if current_user.role.value == "empreendedor" and process.applicant_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this process"
-        )
+    # Check permissions - empreendedores can only see their own company's processes
+    if not can_view_all_processes(current_user, db):
+        from app.models.company import Company
+        user_companies = db.query(Company.id).filter(Company.user_id == current_user.id).all()
+        user_company_ids = [c[0] for c in user_companies]
+        
+        if process.company_id not in user_company_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to access this process"
+            )
     
     # Include activity name in response
     process_dict = {
@@ -179,11 +210,11 @@ async def update_process(
             detail="Process not found"
         )
     
-    # Check permissions (only gestores/admins can update)
-    if current_user.role.value == "empreendedor":
+    # Check permissions - only licenciadores and admins can update processes
+    if not can_manage_processes(current_user, db):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update processes"
+            detail="Not authorized to update processes. Only roles with MANAGE_PROCESSES permission can update processes."
         )
     
     # Update fields
@@ -239,12 +270,17 @@ async def get_process_history(
             detail="Process not found"
         )
     
-    # Check permissions
-    if current_user.role.value == "empreendedor" and process.applicant_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this process"
-        )
+    # Check permissions - empreendedores can only see their own company's processes
+    if not can_view_all_processes(current_user, db):
+        from app.models.company import Company
+        user_companies = db.query(Company.id).filter(Company.user_id == current_user.id).all()
+        user_company_ids = [c[0] for c in user_companies]
+        
+        if process.company_id not in user_company_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to access this process"
+            )
     
     history = db.query(ProcessHistory).filter(
         ProcessHistory.process_id == process_id

@@ -177,7 +177,7 @@ python execution/run_migrations.py upgrade
 python execution/run_migrations.py history
 ```
 
-Veja `backend/MIGRATIONS.md` para documentação completa.
+Veja `docs/MIGRATIONS.md` para documentação completa.
 
 ## 📝 Próximos Passos
 
@@ -212,7 +212,7 @@ Veja `backend/MIGRATIONS.md` para documentação completa.
 ### Erro de migration
 - Verifique se a migration inicial foi criada
 - Revise o arquivo de migration antes de aplicar
-- Veja `backend/MIGRATIONS.md` para mais ajuda
+- Veja `docs/MIGRATIONS.md` para mais ajuda
 
 ### Erro de importação no Python
 - Certifique-se de estar no ambiente virtual: `source venv/bin/activate`
@@ -223,8 +223,8 @@ Veja `backend/MIGRATIONS.md` para documentação completa.
 
 ## 📚 Documentação Adicional
 
-- **Backend detalhado**: Veja `README_BACKEND.md`
-- **Migrations**: Veja `backend/MIGRATIONS.md`
+- **Backend detalhado**: Veja `docs/README_BACKEND.md`
+- **Migrations**: Veja `docs/MIGRATIONS.md`
 - **API Docs**: http://localhost:8000/docs (após iniciar o servidor)
 - **Frontend**: Veja `README.md` na raiz
 

@@ -200,6 +200,45 @@ alembic upgrade head
 alembic downgrade -1
 ```
 
+## 📋 Migrations Existentes
+
+### Migrations Aplicadas
+
+1. **49276bf7c3fa_initial_migration_create_all_tables**
+   - Criação inicial de todas as tabelas (users, activities, processes, etc.)
+
+2. **add_user_preferences**
+   - Adiciona suporte a preferências de usuário
+
+3. **convert_preferences_to_table**
+   - Converte preferências de JSON para tabela separada
+
+4. **add_company_relationships** (revision: add_company_relationships)
+   - Cria tabela `companies`
+   - Cria tabela `company_activities` (N:N)
+   - Adiciona `company_id` em `processes`
+   - Migra dados existentes
+
+5. **update_roles_to_licenciador** (revision: update_roles_to_licenciador)
+   - Atualiza enum `userrole`: GESTOR → LICENCIADOR
+   - Migra usuários existentes
+
+6. **create_roles_and_permissions** (revision: create_roles_and_permissions)
+   - Cria tabelas `roles`, `permissions`, `role_permissions`
+   - Insere roles e permissões padrão
+   - Adiciona `role_id` em `users`
+   - Migra dados de `role` (enum) para `role_id` (FK)
+
+### Ordem de Aplicação
+
+As migrations devem ser aplicadas na seguinte ordem:
+
+```bash
+alembic upgrade head
+```
+
+O Alembic gerencia automaticamente a ordem baseado em `down_revision`.
+
 ## 📚 Referências
 
 - [Documentação Alembic](https://alembic.sqlalchemy.org/)

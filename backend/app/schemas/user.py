@@ -4,7 +4,9 @@ Pydantic schemas for user-related operations.
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, Dict
 from datetime import datetime
-from app.models.user import UserRole
+# UserRole enum removed - now using database roles
+# Keeping for backward compatibility in schemas if needed
+from typing import Optional as Opt
 
 
 class Address(BaseModel):
@@ -29,7 +31,7 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=6)
     confirm_password: str = Field(..., min_length=6)
     endereco: Optional[Address] = None
-    role: UserRole = UserRole.EMPREENDEDOR
+    role: Optional[str] = None  # Role ID from database. If None, uses default role from database (role with is_default=True).
     
     @field_validator('cnpj')
     @classmethod
@@ -69,17 +71,29 @@ class UserResponse(BaseModel):
     telefone: Optional[str]
     endereco: Optional[Dict] = None
     preferences: Optional[Dict] = None
-    role: UserRole
+    role: str  # Role ID
+    role_name: Optional[str] = None  # Role display name
     created_at: datetime
     
     model_config = {"from_attributes": True}
     
     @classmethod
     def model_validate(cls, obj, **kwargs):
-        """Override to convert UserPreferences relationship to dict format."""
+        """Override to convert UserPreferences and Role relationships to dict format."""
         # Convert the object to dict first
         if hasattr(obj, '__dict__'):
             data = obj.__dict__.copy()
+            
+            # Convert role_id to role for backward compatibility
+            if 'role_id' in data:
+                data['role'] = data['role_id']
+            
+            # Add role name if role_obj is loaded
+            if hasattr(obj, 'role_obj') and obj.role_obj:
+                data['role_name'] = obj.role_obj.name
+                if 'role' not in data:
+                    data['role'] = obj.role_obj.id
+            
             # Convert UserPreferences relationship to dict
             if hasattr(obj, 'preferences') and obj.preferences:
                 data['preferences'] = {

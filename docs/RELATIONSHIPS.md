@@ -4,6 +4,25 @@ Este documento descreve os relacionamentos implementados no sistema de licenciam
 
 ## Estrutura de Relacionamentos
 
+### 0. User → Role (N:1)
+**Um usuário tem uma role, uma role pode ter múltiplos usuários**
+
+- **Tabela:** `users` (N) → `roles` (1)
+- **Foreign Key:** `users.role_id` → `roles.id`
+- **Cascade:** `ON DELETE RESTRICT` (não permite deletar role se houver usuários)
+- **Uso:** Sistema de permissões baseado em roles armazenadas no banco de dados
+
+**Modelo:**
+```python
+class User(Base):
+    role_id = Column(String, ForeignKey("roles.id", ondelete='RESTRICT'))
+    role_obj = relationship("Role", back_populates="users")
+
+class Role(Base):
+    users = relationship("User", back_populates="role_obj")
+    permissions = relationship("Permission", secondary=role_permissions, ...)
+```
+
 ### 1. User → Companies (1:N)
 **Um usuário pode ter múltiplas empresas**
 
@@ -77,8 +96,14 @@ class Activity(Base):
 
 ```
 ┌─────────┐
-│  User   │
+│  Role   │
 └────┬────┘
+     │ 1
+     │
+     │ N
+┌────▼─────────┐
+│  User        │
+└────┬─────────┘
      │ 1
      │
      │ N
@@ -107,9 +132,45 @@ class Activity(Base):
 └──────────────────────┘
 ```
 
-## Migration
+## Relacionamento Role → Permission (N:N)
 
-A migration `add_company_model_and_relationships.py` implementa:
+**Uma role pode ter múltiplas permissões, uma permissão pode estar em múltiplas roles**
+
+- **Tabela intermediária:** `role_permissions`
+- **Foreign Keys:**
+  - `role_permissions.role_id` → `roles.id`
+  - `role_permissions.permission_id` → `permissions.id`
+- **Cascade:** `ON DELETE CASCADE` em ambos os lados
+- **Uso:** Sistema de permissões flexível onde roles têm permissões associadas
+
+**Modelo:**
+```python
+role_permissions = Table(
+    'role_permissions',
+    Base.metadata,
+    Column('role_id', String, ForeignKey('roles.id', ondelete='CASCADE'), primary_key=True),
+    Column('permission_id', String, ForeignKey('permissions.id', ondelete='CASCADE'), primary_key=True)
+)
+
+class Role(Base):
+    permissions = relationship("Permission", secondary=role_permissions, back_populates="roles")
+
+class Permission(Base):
+    roles = relationship("Role", secondary=role_permissions, back_populates="permissions")
+```
+
+## Migrations
+
+### Migration: create_roles_and_permissions_tables
+- Cria tabelas `roles`, `permissions` e `role_permissions`
+- Insere roles padrão (empreendedor, licenciador, admin)
+- Insere permissões padrão
+- Associa permissões às roles
+- Adiciona coluna `role_id` em `users`
+- Migra dados existentes de `role` (enum) para `role_id`
+
+### Migration: add_company_relationships
+A migration `add_company_relationships.py` implementa:
 
 1. **Criação da tabela `companies`**
    - Campos: id, user_id, razao_social, nome_fantasia, cnpj, etc.

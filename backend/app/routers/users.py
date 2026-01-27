@@ -10,6 +10,7 @@ from app.models.user import User
 from app.models.user_preferences import UserPreferences
 from app.schemas.user import UserResponse, UserUpdate, UserPreferencesUpdate
 from app.auth import get_current_active_user
+from app.permissions import require_admin
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -19,10 +20,13 @@ async def get_users(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Get list of users (requires authentication)."""
-    users = db.query(User).options(joinedload(User.preferences)).offset(skip).limit(limit).all()
+    """Get list of users (requires ADMIN role)."""
+    users = db.query(User).options(
+        joinedload(User.preferences),
+        joinedload(User.role_obj)
+    ).offset(skip).limit(limit).all()
     return [UserResponse.model_validate(user) for user in users]
 
 
@@ -33,7 +37,10 @@ async def get_user(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get a specific user by ID."""
-    user = db.query(User).options(joinedload(User.preferences)).filter(User.id == user_id).first()
+    user = db.query(User).options(
+        joinedload(User.preferences),
+        joinedload(User.role_obj)
+    ).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
