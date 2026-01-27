@@ -7,7 +7,7 @@ const Layout = ({ title = "Dashboard" }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-background font-sans">
+        <div className="min-h-screen bg-background dark:bg-slate-900 font-sans transition-colors duration-200">
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <Header title={title} onMenuClick={() => setSidebarOpen(true)} />
             <main className="ml-0 md:ml-64 p-4 md:p-8 fade-in">
@@ -16,7 +16,7 @@ const Layout = ({ title = "Dashboard" }) => {
             {/* Overlay para mobile */}
             {sidebarOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    className="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 md:hidden"
                     onClick={() => setSidebarOpen(false)}
                 />
             )}

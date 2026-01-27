@@ -10,42 +10,45 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import { WorkflowProvider } from './context/WorkflowContext';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   return (
-    <AuthProvider>
-      <WorkflowProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Rota raiz - página inicial é o login */}
-            <Route path="/" element={<Login />} />
-            
-            {/* Rotas públicas */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            {/* Rotas protegidas - todas dentro do Layout */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/new" element={<NewProcess />} />
-              <Route path="/process/:id" element={<ProcessDetails />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-            
-            {/* Redirecionar rotas desconhecidas para login (página inicial) */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </WorkflowProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <WorkflowProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Rota raiz - página inicial é o login */}
+              <Route path="/" element={<Login />} />
+              
+              {/* Rotas públicas */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              
+              {/* Rotas protegidas - todas dentro do Layout */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/new" element={<NewProcess />} />
+                <Route path="/process/:id" element={<ProcessDetails />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+              
+              {/* Redirecionar rotas desconhecidas para login (página inicial) */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </WorkflowProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

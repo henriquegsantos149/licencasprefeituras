@@ -52,6 +52,12 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserPreferences(BaseModel):
+    """Schema for user preferences."""
+    darkMode: bool = False
+    notifications: bool = True
+
+
 class UserResponse(BaseModel):
     """Schema for user response (without password)."""
     id: str
@@ -62,10 +68,25 @@ class UserResponse(BaseModel):
     email: str
     telefone: Optional[str]
     endereco: Optional[Dict] = None
+    preferences: Optional[Dict] = None
     role: UserRole
     created_at: datetime
     
     model_config = {"from_attributes": True}
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating user data."""
+    razao_social: Optional[str] = None
+    nome_fantasia: Optional[str] = None
+    telefone: Optional[str] = None
+    endereco: Optional[Address] = None
+
+
+class UserPreferencesUpdate(BaseModel):
+    """Schema for updating user preferences."""
+    darkMode: Optional[bool] = None
+    notifications: Optional[bool] = None
 
 
 class Token(BaseModel):

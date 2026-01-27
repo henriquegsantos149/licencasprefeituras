@@ -71,9 +71,9 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="min-h-screen flex items-center justify-center bg-background dark:bg-slate-900 p-4 transition-colors duration-200">
             <div className="max-w-md w-full">
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 overflow-hidden transition-colors duration-200">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-cta to-blue-600 p-6 md:p-8 text-white text-center">
                         <div className="flex items-center justify-center gap-3 mb-2">
@@ -86,14 +86,14 @@ const Login = () => {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
                         {errors.submit && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                <p className="text-red-700 text-sm">{errors.submit}</p>
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                <p className="text-red-700 dark:text-red-300 text-sm">{errors.submit}</p>
                             </div>
                         )}
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                 <Mail className="w-4 h-4 inline mr-1" />
                                 Email
                             </label>
@@ -102,17 +102,17 @@ const Login = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className={`input ${errors.email ? 'border-red-500' : ''}`}
+                                className={`input ${errors.email ? 'border-red-500 dark:border-red-500' : ''}`}
                                 placeholder="teste ou seu@email.com.br"
                                 autoComplete="username"
                             />
                             {errors.email && (
-                                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.email}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                 <Lock className="w-4 h-4 inline mr-1" />
                                 Senha
                             </label>
@@ -121,12 +121,12 @@ const Login = () => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                className={`input ${errors.password ? 'border-red-500' : ''}`}
+                                className={`input ${errors.password ? 'border-red-500 dark:border-red-500' : ''}`}
                                 placeholder="Digite sua senha"
                                 autoComplete="current-password"
                             />
                             {errors.password && (
-                                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                                <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.password}</p>
                             )}
                         </div>
 
@@ -134,13 +134,13 @@ const Login = () => {
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    className="w-4 h-4 text-cta border-slate-300 rounded focus:ring-cta"
+                                    className="w-4 h-4 text-cta border-slate-300 dark:border-slate-600 rounded focus:ring-cta dark:bg-slate-700"
                                 />
-                                <span className="text-slate-600">Lembrar-me</span>
+                                <span className="text-slate-600 dark:text-slate-300">Lembrar-me</span>
                             </label>
                             <Link
                                 to="/forgot-password"
-                                className="text-cta hover:text-blue-700 font-medium"
+                                className="text-cta hover:text-blue-700 dark:hover:text-blue-400 font-medium"
                             >
                                 Esqueceu a senha?
                             </Link>
@@ -161,8 +161,8 @@ const Login = () => {
                             )}
                         </button>
 
-                        <div className="text-center pt-4 border-t border-slate-200">
-                            <p className="text-slate-600 mb-4">
+                        <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <p className="text-slate-600 dark:text-slate-300 mb-4">
                                 Ainda não tem uma conta?
                             </p>
                             <Link

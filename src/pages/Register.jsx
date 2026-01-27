@@ -142,25 +142,25 @@ const Register = () => {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="min-h-screen flex items-center justify-center bg-background dark:bg-slate-900 p-4 transition-colors duration-200">
+                <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-8 text-center transition-colors">
                     <div className="mb-4 flex justify-center">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                            <CheckCircle className="w-8 h-8 text-green-600" />
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                         </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-primary mb-2">Cadastro realizado com sucesso!</h2>
-                    <p className="text-slate-600 mb-4">Redirecionando para o dashboard...</p>
-                    <Loader className="w-6 h-6 text-cta animate-spin mx-auto" />
+                    <h2 className="text-2xl font-bold text-primary dark:text-slate-100 mb-2">Cadastro realizado com sucesso!</h2>
+                    <p className="text-slate-600 dark:text-slate-300 mb-4">Redirecionando para o dashboard...</p>
+                    <Loader className="w-6 h-6 text-cta dark:text-blue-400 animate-spin mx-auto" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4 py-8">
+        <div className="min-h-screen flex items-center justify-center bg-background dark:bg-slate-900 p-4 py-8 transition-colors duration-200">
             <div className="max-w-4xl w-full">
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 overflow-hidden transition-colors duration-200">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-cta to-blue-600 p-6 md:p-8 text-white">
                         <div className="flex items-center gap-3 mb-2">
@@ -173,20 +173,20 @@ const Register = () => {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
                         {errors.submit && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                <p className="text-red-700 text-sm">{errors.submit}</p>
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                                <p className="text-red-700 dark:text-red-300 text-sm">{errors.submit}</p>
                             </div>
                         )}
 
                         {/* Dados da Empresa */}
                         <div>
-                            <h2 className="text-lg font-semibold text-primary mb-4 pb-2 border-b border-slate-200">
+                            <h2 className="text-lg font-semibold text-primary dark:text-slate-100 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
                                 Dados da Empresa
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Razão Social <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -203,7 +203,7 @@ const Register = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Nome Fantasia
                                     </label>
                                     <input
@@ -217,7 +217,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         CNPJ <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -235,7 +235,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Inscrição Estadual
                                     </label>
                                     <input
@@ -252,12 +252,12 @@ const Register = () => {
 
                         {/* Dados de Contato */}
                         <div>
-                            <h2 className="text-lg font-semibold text-primary mb-4 pb-2 border-b border-slate-200">
+                            <h2 className="text-lg font-semibold text-primary dark:text-slate-100 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
                                 Dados de Contato
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         <Mail className="w-4 h-4 inline mr-1" />
                                         Email <span className="text-red-500">*</span>
                                     </label>
@@ -275,7 +275,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         <Phone className="w-4 h-4 inline mr-1" />
                                         Telefone <span className="text-red-500">*</span>
                                     </label>
@@ -297,13 +297,13 @@ const Register = () => {
 
                         {/* Endereço */}
                         <div>
-                            <h2 className="text-lg font-semibold text-primary mb-4 pb-2 border-b border-slate-200">
+                            <h2 className="text-lg font-semibold text-primary dark:text-slate-100 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
                                 <MapPin className="w-5 h-5 inline mr-2" />
                                 Endereço
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         CEP <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -321,7 +321,7 @@ const Register = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Logradouro <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -338,7 +338,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Número <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -355,7 +355,7 @@ const Register = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Complemento
                                     </label>
                                     <input
@@ -369,7 +369,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Bairro <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -386,7 +386,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Cidade <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -403,7 +403,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         UF <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -424,13 +424,13 @@ const Register = () => {
 
                         {/* Senha */}
                         <div>
-                            <h2 className="text-lg font-semibold text-primary mb-4 pb-2 border-b border-slate-200">
+                            <h2 className="text-lg font-semibold text-primary dark:text-slate-100 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700">
                                 <Lock className="w-5 h-5 inline mr-2" />
                                 Senha de Acesso
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Senha <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -447,7 +447,7 @@ const Register = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Confirmar Senha <span className="text-red-500">*</span>
                                     </label>
                                     <input

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Bell, Moon, Shield, User, Building2, Mail, Phone, MapPin, Lock, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { formatCNPJ, formatPhone, formatCEP } from '../context/AuthContext';
 
 const Settings = () => {
     const { user, updateUser } = useAuth();
+    const { darkMode, setTheme } = useTheme();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errors, setErrors] = useState({});
@@ -24,8 +26,7 @@ const Settings = () => {
         bairro: '',
         cidade: '',
         uf: '',
-        notifications: true,
-        darkMode: false
+        notifications: true
     });
 
     // Carregar dados do usuário ao montar o componente
@@ -45,8 +46,7 @@ const Settings = () => {
                 bairro: user.endereco?.bairro || '',
                 cidade: user.endereco?.cidade || '',
                 uf: user.endereco?.uf || '',
-                notifications: true,
-                darkMode: false
+                notifications: true
             });
         }
     }, [user]);
@@ -170,8 +170,8 @@ const Settings = () => {
     if (!user) {
         return (
             <div className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
-                    <p className="text-slate-600">Carregando dados do usuário...</p>
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center transition-colors duration-200">
+                    <p className="text-slate-600 dark:text-slate-300">Carregando dados do usuário...</p>
                 </div>
             </div>
         );
@@ -180,19 +180,19 @@ const Settings = () => {
     return (
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 fade-in">
             <div>
-                <h2 className="text-xl md:text-2xl font-bold text-primary">Configurações</h2>
-                <p className="text-sm md:text-base text-slate-500">Gerencie suas preferências e dados da conta.</p>
+                <h2 className="text-xl md:text-2xl font-bold text-primary dark:text-slate-100">Configurações</h2>
+                <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Gerencie suas preferências e dados da conta.</p>
             </div>
 
             {/* Tabs */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="border-b border-slate-200 flex">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-200">
+                <div className="border-b border-slate-200 dark:border-slate-700 flex">
                     <button
                         onClick={() => setActiveTab('dados')}
                         className={`flex-1 px-6 py-4 font-semibold transition-colors ${
                             activeTab === 'dados'
-                                ? 'text-cta border-b-2 border-cta bg-blue-50/50'
-                                : 'text-slate-600 hover:text-cta hover:bg-slate-50'
+                                ? 'text-cta border-b-2 border-cta bg-blue-50/50 dark:bg-blue-900/20'
+                                : 'text-slate-600 dark:text-slate-300 hover:text-cta dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                         }`}
                     >
                         <Building2 className="w-4 h-4 inline mr-2" />
@@ -202,8 +202,8 @@ const Settings = () => {
                         onClick={() => setActiveTab('preferencias')}
                         className={`flex-1 px-6 py-4 font-semibold transition-colors ${
                             activeTab === 'preferencias'
-                                ? 'text-cta border-b-2 border-cta bg-blue-50/50'
-                                : 'text-slate-600 hover:text-cta hover:bg-slate-50'
+                                ? 'text-cta border-b-2 border-cta bg-blue-50/50 dark:bg-blue-900/20'
+                                : 'text-slate-600 dark:text-slate-300 hover:text-cta dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                         }`}
                     >
                         <Shield className="w-4 h-4 inline mr-2" />
@@ -213,16 +213,16 @@ const Settings = () => {
 
                 {/* Mensagens de feedback */}
                 {errors.submit && (
-                    <div className="mx-6 mt-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-red-700 text-sm">{errors.submit}</p>
+                    <div className="mx-6 mt-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-red-700 dark:text-red-300 text-sm">{errors.submit}</p>
                     </div>
                 )}
 
                 {success && (
-                    <div className="mx-6 mt-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-green-700 text-sm">Dados atualizados com sucesso!</p>
+                    <div className="mx-6 mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-green-700 dark:text-green-300 text-sm">Dados atualizados com sucesso!</p>
                     </div>
                 )}
 
@@ -232,15 +232,15 @@ const Settings = () => {
                         {/* Dados da Empresa */}
                         <div>
                             <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-                                <div className="p-2 md:p-3 bg-blue-50 text-cta rounded-lg flex-shrink-0">
+                                <div className="p-2 md:p-3 bg-blue-50 dark:bg-blue-900/30 text-cta dark:text-blue-400 rounded-lg flex-shrink-0">
                                     <Building2 className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
-                                <h3 className="text-base md:text-lg font-bold text-primary">Dados da Empresa</h3>
+                                <h3 className="text-base md:text-lg font-bold text-primary dark:text-slate-100">Dados da Empresa</h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Razão Social <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -256,7 +256,7 @@ const Settings = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Nome Fantasia
                                     </label>
                                     <input
@@ -269,7 +269,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         CNPJ <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -287,7 +287,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Inscrição Estadual
                                     </label>
                                     <input
@@ -307,12 +307,12 @@ const Settings = () => {
                                 <div className="p-2 md:p-3 bg-green-50 text-green-600 rounded-lg flex-shrink-0">
                                     <Mail className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
-                                <h3 className="text-base md:text-lg font-bold text-primary">Dados de Contato</h3>
+                                <h3 className="text-base md:text-lg font-bold text-primary dark:text-slate-100">Dados de Contato</h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Email <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -328,7 +328,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Telefone <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -353,12 +353,12 @@ const Settings = () => {
                                 <div className="p-2 md:p-3 bg-purple-50 text-purple-600 rounded-lg flex-shrink-0">
                                     <MapPin className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
-                                <h3 className="text-base md:text-lg font-bold text-primary">Endereço</h3>
+                                <h3 className="text-base md:text-lg font-bold text-primary dark:text-slate-100">Endereço</h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         CEP <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -376,7 +376,7 @@ const Settings = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Logradouro <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -392,7 +392,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Número <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -408,7 +408,7 @@ const Settings = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Complemento
                                     </label>
                                     <input
@@ -421,7 +421,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Bairro <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -437,7 +437,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Cidade <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -453,7 +453,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         UF <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -481,16 +481,16 @@ const Settings = () => {
                             <div className="p-2 md:p-3 bg-purple-50 text-purple-600 rounded-lg flex-shrink-0">
                                 <Shield className="w-5 h-5 md:w-6 md:h-6" />
                             </div>
-                            <h3 className="text-base md:text-lg font-bold text-primary">Preferências e Segurança</h3>
+                            <h3 className="text-base md:text-lg font-bold text-primary dark:text-slate-100">Preferências e Segurança</h3>
                         </div>
 
                         <div className="space-y-3 md:space-y-4">
-                            <div className="flex items-center justify-between p-3 md:p-4 border border-slate-100 rounded-lg hover:border-cta/30 transition-colors gap-3">
+                            <div className="flex items-center justify-between p-3 md:p-4 border border-slate-100 dark:border-slate-700 rounded-lg hover:border-cta/30 dark:hover:border-blue-500/30 transition-colors gap-3">
                                 <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-slate-400 flex-shrink-0" />
+                                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
                                     <div className="min-w-0">
-                                        <p className="font-medium text-sm md:text-base text-slate-700">Notificações por E-mail</p>
-                                        <p className="text-xs text-slate-500 hidden sm:block">Receber atualizações sobre o andamento dos processos.</p>
+                                        <p className="font-medium text-sm md:text-base text-slate-700 dark:text-slate-200">Notificações por E-mail</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Receber atualizações sobre o andamento dos processos.</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -500,26 +500,26 @@ const Settings = () => {
                                         onChange={(e) => setFormData({ ...formData, notifications: e.target.checked })}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cta"></div>
+                                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cta"></div>
                                 </label>
                             </div>
 
-                            <div className="flex items-center justify-between p-3 md:p-4 border border-slate-100 rounded-lg hover:border-cta/30 transition-colors gap-3">
+                            <div className="flex items-center justify-between p-3 md:p-4 border border-slate-100 dark:border-slate-700 rounded-lg hover:border-cta/30 dark:hover:border-blue-500/30 transition-colors gap-3">
                                 <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                    <Moon className="w-4 h-4 md:w-5 md:h-5 text-slate-400 flex-shrink-0" />
+                                    <Moon className="w-4 h-4 md:w-5 md:h-5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
                                     <div className="min-w-0">
-                                        <p className="font-medium text-sm md:text-base text-slate-700">Modo Escuro (Beta)</p>
-                                        <p className="text-xs text-slate-500 hidden sm:block">Ativar interface escura para ambientes noturnos.</p>
+                                        <p className="font-medium text-sm md:text-base text-slate-700 dark:text-slate-200">Modo Escuro</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Ativar interface escura para ambientes noturnos.</p>
                                     </div>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                                     <input
                                         type="checkbox"
-                                        checked={formData.darkMode}
-                                        onChange={(e) => setFormData({ ...formData, darkMode: e.target.checked })}
+                                        checked={darkMode}
+                                        onChange={(e) => setTheme(e.target.checked)}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cta"></div>
+                                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cta"></div>
                                 </label>
                             </div>
                         </div>
@@ -527,7 +527,7 @@ const Settings = () => {
                 )}
 
                 {/* Footer com botão de salvar */}
-                <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <div className="p-4 md:p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end transition-colors duration-200">
                     <button
                         onClick={handleSave}
                         disabled={loading}

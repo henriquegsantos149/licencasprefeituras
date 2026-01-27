@@ -32,6 +32,9 @@ class User(Base):
     # Address fields stored as JSON
     endereco = Column(JSON, nullable=True)
     
+    # User preferences stored as JSON (darkMode, notifications, etc.)
+    preferences = Column(JSON, nullable=True, default=lambda: {"darkMode": False, "notifications": True})
+    
     # Role and permissions
     role = Column(SQLEnum(UserRole), default=UserRole.EMPREENDEDOR, nullable=False)
     
