@@ -27,7 +27,7 @@ Para o **frontend (Vite/React)**, há duas opções: **Static Web Apps (recomend
 
 ### 2) PostgreSQL Flexible Server
 
-- [ ] Criar PostgreSQL Flexible Server
+- [x] Criar PostgreSQL Flexible Server (já existe)
   - Portal: **Create a resource** → procure **Azure Database for PostgreSQL Flexible Server** → **Create**
   - Aba **Basics**:
     - [ ] **Server name** (ex: `pg-licencas`)
@@ -37,18 +37,22 @@ Para o **frontend (Vite/React)**, há duas opções: **Static Web Apps (recomend
     - [ ] **Admin username** (ex: `postgresadmin`)
     - [ ] **Password** (forte)
   - Aba **Networking**:
-    - [ ] Defina o acesso (Public access com firewall, ou Private/VNet)
+    - [x] Defina o acesso **Private/VNet (VNet integration)** (confirmado)
   - Aba **Review + create** → **Create**
 
 ### 3) Criar database
 
-- [ ] Criar o database `licencas_prefeituras`
+- [x] Criar o database `licencas_prefeituras` (já aparece na listagem)
   - Portal: **PostgreSQL flexible server** → (seu server) → **Databases** → **Add**
 
 ### 4) Rede/segurança/backup (mínimo)
 
 - [ ] Configurar rede/acesso:
-  - [ ] **Firewall**: liberar somente o necessário (temporário para seu IP, ou via VNet/Private)
+  - [ ] **Private access / VNet**:
+    - [ ] Confirmar que existe **Private DNS zone** vinculada à VNet (ex.: `privatelink.postgres.database.azure.com`)
+    - [ ] Confirmar que o servidor Postgres está usando **Private endpoint / private access** (sem acesso público)
+    - [ ] Garantir que o **App Service (backend)** fará **VNet Integration** na mesma VNet (ver seção do Backend)
+  - [ ] **Public access (se aplicável)**: liberar somente o necessário via firewall (IP do App Service) — não recomendado se você já está em VNet
   - [ ] **TLS** habilitado (padrão Azure)
   - [ ] **Backups** habilitados e retenção definida
 
@@ -129,16 +133,31 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ### 5) Deploy do código (monorepo)
 
-Você pode publicar pelo Portal de duas formas comuns:
+Você pode publicar via **GitHub Actions** (recomendado) ou pelo Portal.
 
-**Opção A — Deployment Center (GitHub)**
+#### Opção A (recomendada) — GitHub Actions
+
+- [ ] Criar o workflow no repositório
+  - [x] Workflow criado em `.github/workflows/deploy-backend-azure-appservice.yml`
+  - [ ] Editar no workflow o `AZURE_WEBAPP_NAME` (nome do seu Web App)
+- [ ] Criar secret no GitHub:
+  - Portal → seu **Web App** → **Get publish profile** (baixar o arquivo)
+  - GitHub → **Settings > Secrets and variables > Actions > New repository secret**
+    - [ ] `AZURE_WEBAPP_PUBLISH_PROFILE` = conteúdo do publish profile (XML)
+- [ ] Habilitar build durante o deploy (necessário para instalar `requirements.txt`):
+  - Portal → Web App → **Configuration > Application settings**
+    - [ ] `SCM_DO_BUILD_DURING_DEPLOYMENT` = `true`
+  - Salvar e **Restart**
+- [ ] Fazer push para `main` (ou rodar manualmente em **Actions > workflow_dispatch**)
+
+#### Opção B — Deployment Center (GitHub)
 - [ ] Web App → **Deployment Center**
 - [ ] Source = **GitHub** (ou Azure Repos)
 - [ ] Selecione **repo** e **branch**
 - [ ] Garanta que o workflow publique **a pasta `backend/`** (monorepo)
 - [ ] Verifique logs do build/deploy no próprio Deployment Center
 
-**Opção B — Advanced Tools (Kudu) / Zip Deploy**
+#### Opção C — Advanced Tools (Kudu) / Zip Deploy
 - [ ] Web App → **Advanced Tools** → **Go** (abre o Kudu)
 - [ ] Use **Zip Deploy** para enviar o artefato do backend
 
