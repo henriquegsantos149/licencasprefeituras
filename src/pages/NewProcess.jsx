@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWorkflow, ACTIVITIES } from '../context/WorkflowContext';
 import { useAuth } from '../context/AuthContext';
 import { Upload, CheckCircle, AlertCircle, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
+import ModernSelect from '../components/ui/ModernSelect';
 
 const NewProcess = () => {
     const navigate = useNavigate();
@@ -79,22 +80,22 @@ const NewProcess = () => {
                 name: a.name,
                 group: a.group || '',
                 category: a.category || '',
+                sortOrder: typeof a.sort_order === 'number' ? a.sort_order : null,
                 risk: a.risk_level || '',
                 docs: Array.isArray(a.required_documents) ? a.required_documents : [],
                 questions: Array.isArray(a.questions) ? a.questions : []
             }))
-            .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'))
         : Object.entries(ACTIVITIES)
-            .map(([name, meta]) => ({
+            .map(([name, meta], idx) => ({
                 id: name,
                 name,
                 group: meta.group || '',
                 category: meta.category || '',
+                sortOrder: idx,
                 risk: meta.risk || '',
                 docs: Array.isArray(meta.docs) ? meta.docs : [],
                 questions: Array.isArray(meta.questions) ? meta.questions : []
-            }))
-            .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'));
+            }));
 
     const groupedActivities = normalizedActivities.reduce((acc, a) => {
         const groupLabel = (a.group || a.category || 'Outros').trim() || 'Outros';
@@ -103,7 +104,30 @@ const NewProcess = () => {
         return acc;
     }, {});
 
-    const groupedEntries = Object.entries(groupedActivities).sort(([ga], [gb]) => ga.localeCompare(gb, 'pt-BR'));
+    const GROUP_ORDER = ['Agropecuária', 'Indústrias', 'Comércio e Serviços', 'Obras Civis', 'Outros'];
+    const groupRank = (label) => {
+        const idx = GROUP_ORDER.indexOf(label);
+        return idx === -1 ? GROUP_ORDER.length : idx;
+    };
+
+    const groupedEntries = Object.entries(groupedActivities)
+        .sort(([ga], [gb]) => {
+            const ra = groupRank(ga);
+            const rb = groupRank(gb);
+            if (ra !== rb) return ra - rb;
+            return ga.localeCompare(gb, 'pt-BR');
+        })
+        .map(([groupLabel, items]) => {
+            const sortedItems = [...items].sort((a, b) => {
+                const ao = a.sortOrder;
+                const bo = b.sortOrder;
+                if (typeof ao === 'number' && typeof bo === 'number') return ao - bo;
+                if (typeof ao === 'number') return -1;
+                if (typeof bo === 'number') return 1;
+                return (a.name || '').localeCompare(b.name || '', 'pt-BR');
+            });
+            return [groupLabel, sortedItems];
+        });
 
     const activityData = normalizedActivities.find(a => a.id === selectedActivityId) || null;
 
@@ -168,24 +192,17 @@ const NewProcess = () => {
                         </div>
 
                         <div className="space-y-2 md:space-y-4">
-                            <label className="block text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200">Atividade do Empreendimento</label>
-                            <select
+                            <ModernSelect
+                                label="Atividade do Empreendimento"
+                                placeholder={loadingActivities ? 'Carregando atividades...' : 'Selecione ou busque a atividade...'}
                                 value={selectedActivityId}
-                                onChange={(e) => setSelectedActivityId(e.target.value)}
-                                className="input text-sm md:text-base"
-                            >
-                                <option value="">Selecione uma atividade...</option>
-                                {loadingActivities && (
-                                    <option value="" disabled>Carregando atividades...</option>
-                                )}
-                                {groupedEntries.map(([groupLabel, items]) => (
-                                    <optgroup key={groupLabel} label={groupLabel}>
-                                        {items.map((a) => (
-                                            <option key={a.id} value={a.id}>{a.name}</option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
+                                onChange={setSelectedActivityId}
+                                disabled={loadingActivities}
+                                groups={groupedEntries.map(([groupLabel, items]) => ({
+                                    label: groupLabel,
+                                    options: items.map((a) => ({ value: a.id, label: a.name })),
+                                }))}
+                            />
                             {activitiesError && (
                                 <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                                     {activitiesError}. Usando lista local.

@@ -2,6 +2,7 @@
 Activity management routes.
 """
 from fastapi import APIRouter, Depends
+from sqlalchemy import nullslast
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
@@ -20,7 +21,12 @@ async def get_activities(
     This endpoint is intentionally public so the "Novo Processo" form can
     populate the activities dropdown without requiring authentication.
     """
-    activities = db.query(Activity).all()
+    activities = (
+        db.query(Activity)
+        .filter(Activity.is_active.is_(True))
+        .order_by(nullslast(Activity.sort_order.asc()), Activity.name.asc())
+        .all()
+    )
     return [ActivityResponse.model_validate(activity) for activity in activities]
 
 
@@ -30,7 +36,11 @@ async def get_activity(
     db: Session = Depends(get_db),
 ):
     """Get a specific activity by ID."""
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    activity = (
+        db.query(Activity)
+        .filter(Activity.id == activity_id, Activity.is_active.is_(True))
+        .first()
+    )
     if not activity:
         from fastapi import HTTPException, status
         raise HTTPException(

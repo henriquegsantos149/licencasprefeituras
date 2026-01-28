@@ -1,48 +1,46 @@
-#!/usr/bin/env python3
+"""Add activity group/sort_order/is_active
+
+Revision ID: act_group_sort_active
+Revises: create_roles_and_permissions
+Create Date: 2026-01-28
+
 """
-Script to seed the database with initial data (activities).
-This should be run after migrations are applied.
-"""
-import sys
-import os
-from pathlib import Path
-import unicodedata
-import re
 
-# Add backend to path
-backend_path = Path(__file__).parent.parent / "backend"
-sys.path.insert(0, str(backend_path))
+from typing import Sequence, Union
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.config import settings
-from app.models.activity import Activity
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
-def slugify(text: str) -> str:
-    """
-    Create a stable ASCII slug for Activity.id.
-    """
-    text = (text or "").strip().lower()
-    text = unicodedata.normalize("NFKD", text)
-    text = "".join(ch for ch in text if not unicodedata.combining(ch))
-    text = text.replace("/", " ")
-    text = re.sub(r"[^\w\s-]", "", text, flags=re.UNICODE)
-    text = re.sub(r"[\s_]+", "-", text).strip("-")
-    text = re.sub(r"-{2,}", "-", text)
-    return text
 
-def get_activities_seed_data():
-    """
-    Seed dataset based on the richer catalog that exists in code
-    (`rota-do-licenciamento/src/context/WorkflowContext.jsx`).
-    """
+# revision identifiers, used by Alembic.
+revision: str = "act_group_sort_active"
+down_revision: Union[str, None] = "create_roles_and_permissions"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    op.add_column("activities", sa.Column("group_name", sa.String(), nullable=True))
+    op.add_column("activities", sa.Column("sort_order", sa.Integer(), nullable=True))
+    op.add_column(
+        "activities",
+        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
+    )
+    op.create_index(op.f("ix_activities_sort_order"), "activities", ["sort_order"], unique=False)
+
+    # Data migration: ensure the activities catalog matches the original hardcoded list
+    # (groups + ordering + docs/questions).
     activities = [
         # Agropecuária
         {
+            "id": "avicultura",
             "name": "Avicultura",
-            "group": "Agropecuária",
+            "group_name": "Agropecuária",
             "category": "Agropecuária",
             "risk_level": "Médio",
+            "sort_order": 0,
+            "is_active": True,
             "required_documents": [
                 {"id": "car", "label": "Cadastro Ambiental Rural (CAR)", "required": True},
                 {"id": "water", "label": "Outorga de Uso da Água (AESA)", "required": True},
@@ -55,10 +53,13 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "suinocultura",
             "name": "Suinocultura",
-            "group": "Agropecuária",
+            "group_name": "Agropecuária",
             "category": "Agropecuária",
             "risk_level": "Alto",
+            "sort_order": 1,
+            "is_active": True,
             "required_documents": [
                 {"id": "car", "label": "Cadastro Ambiental Rural (CAR)", "required": True},
                 {"id": "water", "label": "Outorga de Uso da Água (AESA)", "required": True},
@@ -70,10 +71,13 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "bovinocultura",
             "name": "Bovinocultura",
-            "group": "Agropecuária",
+            "group_name": "Agropecuária",
             "category": "Agropecuária",
             "risk_level": "Médio",
+            "sort_order": 2,
+            "is_active": True,
             "required_documents": [
                 {"id": "car", "label": "Cadastro Ambiental Rural (CAR)", "required": True},
                 {"id": "sanitario", "label": "Atestado Sanitário do Rebanho", "required": True},
@@ -84,10 +88,13 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "piscicultura",
             "name": "Piscicultura",
-            "group": "Agropecuária",
+            "group_name": "Agropecuária",
             "category": "Agropecuária",
             "risk_level": "Médio",
+            "sort_order": 3,
+            "is_active": True,
             "required_documents": [
                 {"id": "car", "label": "Cadastro Ambiental Rural (CAR)", "required": True},
                 {"id": "water", "label": "Outorga de Uso da Água (AESA)", "required": True},
@@ -101,10 +108,13 @@ def get_activities_seed_data():
 
         # Indústrias
         {
+            "id": "padaria",
             "name": "Padaria",
-            "group": "Indústrias",
+            "group_name": "Indústrias",
             "category": "Indústria de Produtos Alimentares",
             "risk_level": "Baixo",
+            "sort_order": 4,
+            "is_active": True,
             "required_documents": [
                 {"id": "alvara", "label": "Alvará de Funcionamento", "required": True},
                 {"id": "dedetizacao", "label": "Comprovante de Dedetização", "required": True},
@@ -115,10 +125,13 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "serralharia",
             "name": "Serralharia",
-            "group": "Indústrias",
+            "group_name": "Indústrias",
             "category": "Indústria Metalúrgica",
             "risk_level": "Médio",
+            "sort_order": 5,
+            "is_active": True,
             "required_documents": [
                 {"id": "ruido", "label": "Laudo de Ruído", "required": False},
                 {"id": "residuos", "label": "Destinação de Resíduos Metálicos", "required": True},
@@ -128,13 +141,14 @@ def get_activities_seed_data():
                 {"id": "pintura", "label": "Possui cabine de pintura?", "type": "select", "options": ["Sim", "Não"]},
             ],
         },
-        # Existing IDs in DB are "laticinio" and "posto-combustivel", keep them stable
         {
             "id": "laticinio",
             "name": "Laticínio",
-            "group": "Indústrias",
+            "group_name": "Indústrias",
             "category": "Indústria de Transformação",
             "risk_level": "Médio/Alto",
+            "sort_order": 6,
+            "is_active": True,
             "required_documents": [
                 {"id": "pgrs", "label": "Plano de Gerenciamento de Resíduos Sólidos (PGRS)", "required": True},
                 {"id": "effluents", "label": "Projeto de Efluentes Líquidos", "required": True},
@@ -148,49 +162,51 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "casa-de-farinha",
             "name": "Casa de Farinha",
-            "group": "Indústrias",
+            "group_name": "Indústrias",
             "category": "Indústria de Produtos Alimentares",
             "risk_level": "Baixo",
-            "required_documents": [
-                {"id": "manipueira", "label": "Solução para Manipueira", "required": True},
-            ],
-            "questions": [
-                {"id": "capacidade", "label": "Capacidade de produção (kg/dia)", "type": "number"},
-            ],
+            "sort_order": 7,
+            "is_active": True,
+            "required_documents": [{"id": "manipueira", "label": "Solução para Manipueira", "required": True}],
+            "questions": [{"id": "capacidade", "label": "Capacidade de produção (kg/dia)", "type": "number"}],
         },
         {
+            "id": "beneficiamento-de-frutas",
             "name": "Beneficiamento de Frutas",
-            "group": "Indústrias",
+            "group_name": "Indústrias",
             "category": "Indústria de Produtos Alimentares",
             "risk_level": "Baixo/Médio",
-            "required_documents": [
-                {"id": "pgrs", "label": "PGRS", "required": True},
-            ],
-            "questions": [
-                {"id": "processo", "label": "Tipo de processamento (polpa, doce, suco)", "type": "text"},
-            ],
+            "sort_order": 8,
+            "is_active": True,
+            "required_documents": [{"id": "pgrs", "label": "PGRS", "required": True}],
+            "questions": [{"id": "processo", "label": "Tipo de processamento (polpa, doce, suco)", "type": "text"}],
         },
         {
+            "id": "fabrica-de-gelo",
             "name": "Fábrica de Gelo",
-            "group": "Indústrias",
+            "group_name": "Indústrias",
             "category": "Indústria Diversa",
             "risk_level": "Baixo",
+            "sort_order": 9,
+            "is_active": True,
             "required_documents": [
                 {"id": "water_analise", "label": "Análise de Potabilidade da Água", "required": True},
                 {"id": "water_outorga", "label": "Outorga (AESA)", "required": True},
             ],
-            "questions": [
-                {"id": "amonia", "label": "Utiliza amônia no resfriamento?", "type": "select", "options": ["Sim", "Não"]},
-            ],
+            "questions": [{"id": "amonia", "label": "Utiliza amônia no resfriamento?", "type": "select", "options": ["Sim", "Não"]}],
         },
 
         # Comércio e Serviços
         {
+            "id": "oficina-mecanica",
             "name": "Oficina Mecânica",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Serviços de Manutenção",
             "risk_level": "Médio",
+            "sort_order": 10,
+            "is_active": True,
             "required_documents": [
                 {"id": "csao", "label": "Caixa Separadora de Água e Óleo (CSAO)", "required": True},
                 {"id": "oleo", "label": "Contrato de recolhimento de óleo usado", "required": True},
@@ -204,9 +220,11 @@ def get_activities_seed_data():
         {
             "id": "posto-combustivel",
             "name": "Posto de Combustível",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Comércio Varejista de Combustíveis",
             "risk_level": "Alto",
+            "sort_order": 11,
+            "is_active": True,
             "required_documents": [
                 {"id": "sasc", "label": "Teste de Estanqueidade (SASC)", "required": True},
                 {"id": "csao", "label": "Caixa Separadora (CSAO) - Projeto/Laudo", "required": True},
@@ -219,10 +237,13 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "hotel-pousada",
             "name": "Hotel/Pousada",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Turismo e Hotelaria",
             "risk_level": "Baixo",
+            "sort_order": 12,
+            "is_active": True,
             "required_documents": [
                 {"id": "esgoto", "label": "Ligação de Esgoto ou Fossa Séptica", "required": True},
                 {"id": "dedetizacao", "label": "Comprovante de Dedetização", "required": True},
@@ -233,33 +254,38 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "clinica-medica-odontologica",
             "name": "Clínica Médica/Odontológica",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Saúde",
             "risk_level": "Médio",
+            "sort_order": 13,
+            "is_active": True,
             "required_documents": [
                 {"id": "pgrss", "label": "Plano de Ger. Resíduos de Saúde (PGRSS)", "required": True},
                 {"id": "contrato_lixo", "label": "Contrato com empresa de coleta (Infectante)", "required": True},
             ],
-            "questions": [
-                {"id": "raiox", "label": "Possui aparelho de Raio-X?", "type": "select", "options": ["Sim", "Não"]},
-            ],
+            "questions": [{"id": "raiox", "label": "Possui aparelho de Raio-X?", "type": "select", "options": ["Sim", "Não"]}],
         },
         {
+            "id": "laboratorio",
             "name": "Laboratório",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Saúde",
             "risk_level": "Médio",
-            "required_documents": [
-                {"id": "pgrss", "label": "PGRSS", "required": True},
-            ],
+            "sort_order": 14,
+            "is_active": True,
+            "required_documents": [{"id": "pgrss", "label": "PGRSS", "required": True}],
             "questions": [],
         },
         {
+            "id": "centro-educacional",
             "name": "Centro Educacional",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Educação",
             "risk_level": "Baixo",
+            "sort_order": 15,
+            "is_active": True,
             "required_documents": [
                 {"id": "alvara", "label": "Alvará", "required": True},
                 {"id": "bombeiros", "label": "AVCB (Bombeiros)", "required": True},
@@ -270,50 +296,54 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "cemiterio",
             "name": "Cemitério",
-            "group": "Comércio e Serviços",
+            "group_name": "Comércio e Serviços",
             "category": "Serviços Funerários",
             "risk_level": "Alto",
+            "sort_order": 16,
+            "is_active": True,
             "required_documents": [
                 {"id": "geo", "label": "Estudo Geológico/Hidrogeológico", "required": True},
                 {"id": "plano_cemiterio", "label": "Plano Diretor do Cemitério", "required": True},
             ],
-            "questions": [
-                {"id": "profundidade", "label": "Profundidade do lençol freático (m)", "type": "number"},
-            ],
+            "questions": [{"id": "profundidade", "label": "Profundidade do lençol freático (m)", "type": "number"}],
         },
 
         # Obras Civis
         {
+            "id": "pavimentacao",
             "name": "Pavimentação",
-            "group": "Obras Civis",
+            "group_name": "Obras Civis",
             "category": "Infraestrutura",
             "risk_level": "Médio",
+            "sort_order": 17,
+            "is_active": True,
             "required_documents": [
                 {"id": "projeto_viario", "label": "Projeto Geométrico/Viário", "required": True},
                 {"id": "drenagem", "label": "Projeto de Drenagem", "required": True},
             ],
-            "questions": [
-                {"id": "extensao", "label": "Extensão da obra (km)", "type": "number"},
-            ],
+            "questions": [{"id": "extensao", "label": "Extensão da obra (km)", "type": "number"}],
         },
         {
+            "id": "drenagem",
             "name": "Drenagem",
-            "group": "Obras Civis",
+            "group_name": "Obras Civis",
             "category": "Infraestrutura",
             "risk_level": "Médio",
-            "required_documents": [
-                {"id": "projeto_hidro", "label": "Projeto Hidráulico", "required": True},
-            ],
-            "questions": [
-                {"id": "corpo_receptor", "label": "Corpo hídrico receptor", "type": "text"},
-            ],
+            "sort_order": 18,
+            "is_active": True,
+            "required_documents": [{"id": "projeto_hidro", "label": "Projeto Hidráulico", "required": True}],
+            "questions": [{"id": "corpo_receptor", "label": "Corpo hídrico receptor", "type": "text"}],
         },
         {
+            "id": "loteamento",
             "name": "Loteamento",
-            "group": "Obras Civis",
+            "group_name": "Obras Civis",
             "category": "Parcelamento do Solo",
             "risk_level": "Alto",
+            "sort_order": 19,
+            "is_active": True,
             "required_documents": [
                 {"id": "urbanistico", "label": "Projeto Urbanístico Aprovado", "required": True},
                 {"id": "agua_esgoto", "label": "Carta de Viabilidade (Água/Esgoto e Energia)", "required": True},
@@ -325,94 +355,79 @@ def get_activities_seed_data():
             ],
         },
         {
+            "id": "condominio",
             "name": "Condomínio",
-            "group": "Obras Civis",
+            "group_name": "Obras Civis",
             "category": "Parcelamento do Solo",
             "risk_level": "Alto",
+            "sort_order": 20,
+            "is_active": True,
             "required_documents": [
                 {"id": "projeto_arq", "label": "Projeto Arquitetônico", "required": True},
                 {"id": "esgoto_cond", "label": "Projeto da ETE do Condomínio", "required": True},
             ],
-            "questions": [
-                {"id": "unidades", "label": "Número de unidades habitacionais", "type": "number"},
-            ],
+            "questions": [{"id": "unidades", "label": "Número de unidades habitacionais", "type": "number"}],
         },
         {
+            "id": "reforma-de-predio-publico",
             "name": "Reforma de Prédio Público",
-            "group": "Obras Civis",
+            "group_name": "Obras Civis",
             "category": "Obras Civis",
             "risk_level": "Baixo",
+            "sort_order": 21,
+            "is_active": True,
             "required_documents": [
                 {"id": "memorial_obra", "label": "Memorial Descritivo da Obra", "required": True},
                 {"id": "residuos_const", "label": "PGRCC (Resíduos da Construção)", "required": True},
             ],
-            "questions": [
-                {"id": "area_const", "label": "Área a ser reformada (m²)", "type": "number"},
-            ],
+            "questions": [{"id": "area_const", "label": "Área a ser reformada (m²)", "type": "number"}],
         },
     ]
 
-    # Fill missing IDs deterministically
-    normalized = []
-    for idx, a in enumerate(activities):
-        item = dict(a)
-        item["id"] = item.get("id") or slugify(item["name"])
-        item["sort_order"] = item.get("sort_order", idx)
-        item["is_active"] = True
-        item.setdefault("required_documents", [])
-        item.setdefault("questions", [])
-        normalized.append(item)
+    seed_ids = {a["id"] for a in activities}
+    activities_table = sa.table(
+        "activities",
+        sa.column("id", sa.String()),
+        sa.column("name", sa.String()),
+        sa.column("group_name", sa.String()),
+        sa.column("category", sa.String()),
+        sa.column("risk_level", sa.String()),
+        sa.column("sort_order", sa.Integer()),
+        sa.column("is_active", sa.Boolean()),
+        sa.column("required_documents", sa.JSON()),
+        sa.column("questions", sa.JSON()),
+    )
 
-    return normalized
+    bind = op.get_bind()
 
-def seed_data():
-    """Seed database with activities (insert missing + update existing)."""
-    print("Seeding database with initial data...")
-    
-    engine = create_engine(settings.DATABASE_URL)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    db = SessionLocal()
-    
-    try:
-        # Check if activities already exist
-        existing_count = db.query(Activity).count()
-        seed_activities = get_activities_seed_data()
+    for row in activities:
+        stmt = postgresql.insert(activities_table).values(**row)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["id"],
+            set_={
+                "name": stmt.excluded.name,
+                "group_name": stmt.excluded.group_name,
+                "category": stmt.excluded.category,
+                "risk_level": stmt.excluded.risk_level,
+                "sort_order": stmt.excluded.sort_order,
+                "is_active": stmt.excluded.is_active,
+                "required_documents": stmt.excluded.required_documents,
+                "questions": stmt.excluded.questions,
+            },
+        )
+        bind.execute(stmt)
 
-        if existing_count > 0:
-            print(f"ℹ️  Database already has {existing_count} activities. Upserting seed catalog...")
-        else:
-            print("Populating initial activities...")
-
-        inserted = 0
-        updated = 0
-        for activity_data in seed_activities:
-            activity = db.query(Activity).filter(Activity.id == activity_data["id"]).first()
-            if activity:
-                for k, v in activity_data.items():
-                    setattr(activity, k, v)
-                updated += 1
-            else:
-                db.add(Activity(**activity_data))
-                inserted += 1
-
-        # Deactivate any legacy activities that are not part of the hardcoded catalog
-        seed_ids = {a["id"] for a in seed_activities}
-        legacy = db.query(Activity).filter(~Activity.id.in_(seed_ids)).all()
-        for a in legacy:
-            a.is_active = False
-
-        db.commit()
-        print(f"✓ Upsert completed: inserted={inserted}, updated={updated}, total_seed={len(seed_activities)}")
-        
-    except Exception as e:
-        print(f"✗ Error populating database: {e}")
-        db.rollback()
-        raise
-    finally:
-        db.close()
-    
-    print("\n✓ Database seeding completed successfully!")
+    # Deactivate any legacy activities not in the canonical catalog
+    bind.execute(
+        sa.text('UPDATE activities SET is_active = FALSE WHERE id NOT IN :ids').bindparams(
+            sa.bindparam("ids", expanding=True, value=sorted(seed_ids))
+        )
+    )
 
 
-if __name__ == "__main__":
-    seed_data()
+def downgrade() -> None:
+    op.drop_index(op.f("ix_activities_sort_order"), table_name="activities")
+    op.drop_column("activities", "is_active")
+    op.drop_column("activities", "sort_order")
+    op.drop_column("activities", "group_name")
+
