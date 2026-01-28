@@ -41,3 +41,7 @@ backend/instance/
 *.swp
 *.swo
 *~
+
+# Node
+node_modules/
+**/node_modules/
