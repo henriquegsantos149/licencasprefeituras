@@ -7,8 +7,6 @@ from typing import List
 from app.database import get_db
 from app.models.activity import Activity
 from app.schemas.activity import ActivityResponse
-from app.auth import get_current_active_user
-from app.models.user import User
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 
@@ -16,9 +14,12 @@ router = APIRouter(prefix="/activities", tags=["activities"])
 @router.get("/", response_model=List[ActivityResponse])
 async def get_activities(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
 ):
-    """Get list of available activities."""
+    """Get list of available activities.
+
+    This endpoint is intentionally public so the "Novo Processo" form can
+    populate the activities dropdown without requiring authentication.
+    """
     activities = db.query(Activity).all()
     return [ActivityResponse.model_validate(activity) for activity in activities]
 
@@ -27,7 +28,6 @@ async def get_activities(
 async def get_activity(
     activity_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
 ):
     """Get a specific activity by ID."""
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
