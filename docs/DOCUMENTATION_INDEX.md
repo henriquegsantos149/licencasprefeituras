@@ -39,9 +39,15 @@ Este documento serve como índice para toda a documentação do projeto.
    - Boas práticas
    - Lista de migrations existentes
 
+6. **AZURE_APP_SERVICE_DEPLOY_CHECKLIST.md** - Checklist de Deploy (Azure)
+   - App Service (Linux) para o backend (FastAPI)
+   - Azure Database for PostgreSQL (Flexible Server)
+   - Secrets, migrations/seed e validação pós-deploy
+   - Opções de deploy do frontend (Static Web Apps ou App Service)
+
 ### Frontend
 
-6. **README.md** (raiz) - Guia do frontend
+7. **README.md** (raiz) - Guia do frontend
    - Tecnologias utilizadas
    - Funcionalidades
    - Rotas da aplicação

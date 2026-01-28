@@ -56,12 +56,22 @@ class Secrets:
     @classmethod
     def get(cls, key: str, default: Optional[str] = None) -> Optional[str]:
         """Get a secret value by key."""
+        # Prefer environment variables (Azure App Service Application Settings / Key Vault references)
+        env_value = os.getenv(key)
+        if env_value is not None and env_value.strip() != "":
+            return env_value.strip()
+
         cls._load_secrets()
         return cls._secrets.get(key, default)
     
     @classmethod
     def get_required(cls, key: str) -> str:
         """Get a required secret value, raising error if not found."""
+        # Prefer environment variables (Azure App Service Application Settings / Key Vault references)
+        env_value = os.getenv(key)
+        if env_value is not None and env_value.strip() != "":
+            return env_value.strip()
+
         cls._load_secrets()
         value = cls._secrets.get(key)
         if value is None:
